@@ -57,4 +57,24 @@ fun main() {
     }
 
     val formaPago = if (totalPagar > 2500.0) "3 cuotas" else "2 cuotas"
+
+    println("\n=======================================================")
+    println("RESULTADO FINAL DE MATRÍCULA")
+    println("=======================================================")
+    println("Estudiante: $nombreEstudiante\n")
+
+    println(String.format("%-25s %-12s %-10s", "Curso", "Créditos", "Costo"))
+    println("-------------------------------------------------------")
+    for (i in creditosPorCurso.indices) {
+        val costoCurso = creditosPorCurso[i] * valorCredito
+        println(String.format("%-25s %-12d S/%8.2f", nombresCursos[i], creditosPorCurso[i], costoCurso))
+    }
+
+    println("-------------------------------------------------------")
+    println("Cursos matriculados : $cantidadCursos")
+    println("Total de créditos   : $totalCreditos")
+    println(String.format("Total a pagar       : S/%.2f", totalPagar))
+    println("Carga académica     : $cargaAcademica")
+    println("Forma de pago       : $formaPago")
+    println("=======================================================")
 }
