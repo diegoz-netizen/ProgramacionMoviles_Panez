@@ -1,4 +1,4 @@
-package com.panez.lab02matriculakotlin
+package com.panez.lab02matriculakotlin.ui
 
 fun main() {
     println("=== REGISTRO DE MATRÍCULA ===")
@@ -47,8 +47,23 @@ fun main() {
         creditosPorCurso.add(creditos)
     }
 
+    println("\nSeleccione el Turno (1: Mañana [+10%], 2: Tarde [+15%], 3: Noche [+20%]): ")
+    var opcionTurno = readln().toIntOrNull() ?: 0
+    while (opcionTurno not in 1..3) {
+        print("Opción inválida. Ingrese 1 (Mañana), 2 (Tarde) o 3 (Noche): ")
+        opcionTurno = readln().toIntOrNull() ?: 0
+    }
+
+    val (nombreTurno, porcentajeRecargo) = when (opcionTurno) {
+        1 -> "Mañana" to 0.10
+        2 -> "Tarde" to 0.15
+        else -> "Noche" to 0.20
+    }
+
     val totalCreditos = creditosPorCurso.sum()
-    val totalPagar = totalCreditos * valorCredito
+    val totalPagarBase = totalCreditos * valorCredito
+    val recargoTurno = totalPagarBase * porcentajeRecargo
+    val totalConTurno = totalPagarBase + recargoTurno
 
     val cargaAcademica = when {
         totalCreditos <= 12 -> "Matrícula regular"
@@ -56,12 +71,13 @@ fun main() {
         else -> "Autorización"
     }
 
-    val formaPago = if (totalPagar > 2500.0) "3 cuotas" else "2 cuotas"
+    val formaPago = if (totalConTurno > 2500.0) "3 cuotas" else "2 cuotas"
 
     println("\n=======================================================")
     println("RESULTADO FINAL DE MATRÍCULA")
     println("=======================================================")
-    println("Estudiante: $nombreEstudiante\n")
+    println("Estudiante : $nombreEstudiante")
+    println("Turno      : $nombreTurno (+${(porcentajeRecargo * 100).toInt()}%)\n")
 
     println(String.format("%-25s %-12s %-10s", "Curso", "Créditos", "Costo"))
     println("-------------------------------------------------------")
@@ -73,7 +89,9 @@ fun main() {
     println("-------------------------------------------------------")
     println("Cursos matriculados : $cantidadCursos")
     println("Total de créditos   : $totalCreditos")
-    println(String.format("Total a pagar       : S/%.2f", totalPagar))
+    println(String.format("Subtotal cursos     : S/%.2f", totalPagarBase))
+    println(String.format("Recargo por turno   : S/%.2f", recargoTurno))
+    println(String.format("Total a pagar       : S/%.2f", totalConTurno))
     println("Carga académica     : $cargaAcademica")
     println("Forma de pago       : $formaPago")
     println("=======================================================")
