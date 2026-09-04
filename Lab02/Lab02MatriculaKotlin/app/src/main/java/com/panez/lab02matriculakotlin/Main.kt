@@ -74,8 +74,10 @@ fun main() {
     val totalPagarBase = totalCreditos * valorCredito
     val recargoTurno = totalPagarBase * porcentajeRecargo
     val subtotalCalculado = totalPagarBase + recargoTurno
-
     val totalPagarFinal = if (esBecario) 0.0 else subtotalCalculado
+
+    val montoNeto = totalPagarFinal / 1.18
+    val igv = totalPagarFinal - montoNeto
 
     val cargaAcademica = when {
         totalCreditos <= 12 -> "Matrícula regular"
@@ -108,6 +110,8 @@ fun main() {
     println("Total de créditos   : $totalCreditos")
     println(String.format("Subtotal cursos     : S/%.2f", totalPagarBase))
     println(String.format("Recargo por turno   : S/%.2f", recargoTurno))
+    println(String.format("Base imponible(Neto): S/%.2f", montoNeto))
+    println(String.format("IGV (18%%)           : S/%.2f", igv))
     println(String.format("Total a pagar       : S/%.2f", totalPagarFinal))
     println("Carga académica     : $cargaAcademica")
     println("Forma de pago       : $formaPago")
