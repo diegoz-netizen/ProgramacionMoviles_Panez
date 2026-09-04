@@ -60,10 +60,22 @@ fun main() {
         else -> "Noche" to 0.20
     }
 
+    println("\nSeleccione Categoría (1: Ordinario, 2: Becario [Exonerado]): ")
+    var opcionCategoria = readln().toIntOrNull() ?: 0
+    while (opcionCategoria not in 1..2) {
+        print("Opción inválida. Ingrese 1 (Ordinario) o 2 (Becario): ")
+        opcionCategoria = readln().toIntOrNull() ?: 0
+    }
+
+    val esBecario = (opcionCategoria == 2)
+    val nombreCategoria = if (esBecario) "Becario" else "Ordinario"
+
     val totalCreditos = creditosPorCurso.sum()
     val totalPagarBase = totalCreditos * valorCredito
     val recargoTurno = totalPagarBase * porcentajeRecargo
-    val totalConTurno = totalPagarBase + recargoTurno
+    val subtotalCalculado = totalPagarBase + recargoTurno
+
+    val totalPagarFinal = if (esBecario) 0.0 else subtotalCalculado
 
     val cargaAcademica = when {
         totalCreditos <= 12 -> "Matrícula regular"
@@ -71,12 +83,17 @@ fun main() {
         else -> "Autorización"
     }
 
-    val formaPago = if (totalConTurno > 2500.0) "3 cuotas" else "2 cuotas"
+    val formaPago = when {
+        esBecario -> "Exonerado (Beca 100%)"
+        totalPagarFinal > 2500.0 -> "3 cuotas"
+        else -> "2 cuotas"
+    }
 
     println("\n=======================================================")
     println("RESULTADO FINAL DE MATRÍCULA")
     println("=======================================================")
     println("Estudiante : $nombreEstudiante")
+    println("Categoría  : $nombreCategoria")
     println("Turno      : $nombreTurno (+${(porcentajeRecargo * 100).toInt()}%)\n")
 
     println(String.format("%-25s %-12s %-10s", "Curso", "Créditos", "Costo"))
@@ -91,7 +108,7 @@ fun main() {
     println("Total de créditos   : $totalCreditos")
     println(String.format("Subtotal cursos     : S/%.2f", totalPagarBase))
     println(String.format("Recargo por turno   : S/%.2f", recargoTurno))
-    println(String.format("Total a pagar       : S/%.2f", totalConTurno))
+    println(String.format("Total a pagar       : S/%.2f", totalPagarFinal))
     println("Carga académica     : $cargaAcademica")
     println("Forma de pago       : $formaPago")
     println("=======================================================")
