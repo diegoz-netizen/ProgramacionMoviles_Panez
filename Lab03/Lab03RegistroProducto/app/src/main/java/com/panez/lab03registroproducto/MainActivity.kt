@@ -156,5 +156,13 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.bodyMedium
             )
         }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Text(
+            text = "Desarrollado por Diego Panez",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.outline
+        )
     }
 }
