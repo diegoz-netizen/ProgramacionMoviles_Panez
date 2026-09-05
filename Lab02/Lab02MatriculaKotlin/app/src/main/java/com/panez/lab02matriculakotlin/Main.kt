@@ -1,4 +1,4 @@
-package com.panez.lab02matriculakotlin.ui
+package pe.edu.tecsup.lab03
 
 fun main() {
     println("=== SISTEMA DE MATRÍCULA CON CONTROL DE AFORO ===")
@@ -20,8 +20,8 @@ fun main() {
 
         print("Nombre del estudiante: ")
         var nombreEstudiante = readln()
-        while (nombreEstudiante.isBlank()) {
-            print("El nombre no puede estar vacío. Ingrese nuevamente: ")
+        while (!nombreEstudiante.matches(Regex("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+"))) {
+            print("Nombre inválido (solo letras). Ingrese nuevamente: ")
             nombreEstudiante = readln()
         }
 
@@ -47,8 +47,13 @@ fun main() {
 
             print("Nombre del curso: ")
             var nombre = readln()
-            while (nombre.isBlank()) {
-                print("El nombre del curso no puede estar vacío. Ingrese nuevamente: ")
+
+            while (!nombre.matches(Regex("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+")) || nombresCursos.any { it.equals(nombre, ignoreCase = true) }) {
+                if (!nombre.matches(Regex("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+"))) {
+                    print("El nombre del curso solo debe contener letras. Ingrese nuevamente: ")
+                } else {
+                    print("El curso '$nombre' ya fue ingresado. Ingrese un curso diferente: ")
+                }
                 nombre = readln()
             }
             nombresCursos.add(nombre)
@@ -75,7 +80,7 @@ fun main() {
             else -> "Noche" to 0.20
         }
 
-        println("\nSeleccione Categoría (1: Ordinario, 2: Becario [Exonerado]): ")
+        println("\nSeleccione Categoría (1: Ordinario, 2: Becario [Exonerado de Matrícula]): ")
         var opcionCategoria = readln().toIntOrNull() ?: 0
         while (opcionCategoria !in 1..2) {
             print("Opción inválida. Ingrese 1 (Ordinario) o 2 (Becario): ")
@@ -85,11 +90,23 @@ fun main() {
         val esBecario = (opcionCategoria == 2)
         val nombreCategoria = if (esBecario) "Becario" else "Ordinario"
 
+        var costoMatriculaCobrado = 0.0
+        if (!esBecario) {
+            print("\nIngrese el costo de la matrícula (S/): ")
+            costoMatriculaCobrado = readln().toDoubleOrNull() ?: 0.0
+            while (costoMatriculaCobrado <= 0.0) {
+                print("El costo de la matrícula debe ser un monto positivo. Ingrese nuevamente (S/): ")
+                costoMatriculaCobrado = readln().toDoubleOrNull() ?: 0.0
+            }
+        }
+
+        val textoMatricula = if (esBecario) "Exonerado (S/ 0.00)" else String.format("S/%.2f", costoMatriculaCobrado)
+
         val totalCreditos = creditosPorCurso.sum()
         val totalPagarBase = totalCreditos * valorCredito
         val recargoTurno = totalPagarBase * porcentajeRecargo
-        val subtotalCalculado = totalPagarBase + recargoTurno
-        val totalPagarFinal = if (esBecario) 0.0 else subtotalCalculado
+
+        val totalPagarFinal = totalPagarBase + recargoTurno + costoMatriculaCobrado
 
         val montoNeto = totalPagarFinal / 1.18
         val igv = totalPagarFinal - montoNeto
@@ -100,11 +117,10 @@ fun main() {
             else -> "Autorización"
         }
 
-        val formaPago = when {
-            esBecario -> "Exonerado (Beca 100%)"
-            totalPagarFinal > 2500.0 -> "3 cuotas"
-            else -> "2 cuotas"
-        }
+        val numeroCuotas = if (totalPagarFinal > 2500.0) 3 else 2
+        val montoCuota = totalPagarFinal / numeroCuotas
+
+        val formaPago = "$numeroCuotas cuotas de S/ ${String.format("%.2f", montoCuota)}"
 
         println("\n=======================================================")
         println("RESULTADO FINAL DE MATRÍCULA")
@@ -123,6 +139,7 @@ fun main() {
         println("-------------------------------------------------------")
         println("Cursos matriculados : $cantidadCursos")
         println("Total de créditos   : $totalCreditos")
+        println("Costo de matrícula  : $textoMatricula")
         println(String.format("Subtotal cursos     : S/%.2f", totalPagarBase))
         println(String.format("Recargo por turno   : S/%.2f", recargoTurno))
         println(String.format("Base imponible(Neto): S/%.2f", montoNeto))
@@ -130,6 +147,7 @@ fun main() {
         println(String.format("Total a pagar       : S/%.2f", totalPagarFinal))
         println("Carga académica     : $cargaAcademica")
         println("Forma de pago       : $formaPago")
+        println(String.format("Monto por cuota     : S/%.2f c/u", montoCuota))
         println("=======================================================")
 
         vacantesDisponibles--
