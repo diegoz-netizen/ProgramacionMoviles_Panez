@@ -25,6 +25,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.panez.lab03registroproducto.ui.theme.Lab03RegistroProductoTheme
 
@@ -98,29 +100,61 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
             onClick = { mostrarResumen = true },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Agregar producto")
+            Text("AGREGAR PRODUCTO")
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         if (mostrarResumen) {
+            val precioNum = precio.toDoubleOrNull() ?: 0.0
+            val cantidadNum = cantidad.toIntOrNull() ?: 0
+            val importeTotal = precioNum * cantidadNum
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Resumen del producto",
-                        style = MaterialTheme.typography.titleMedium
+                        text = nombre,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Producto: $nombre")
-                    Text(text = "Precio: S/ $precio")
-                    Text(text = "Cantidad: $cantidad")
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Precio: S/ " + String.format("%.2f", precioNum),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Cantidad: $cantidadNum",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Importe total: S/ " + String.format("%.2f", importeTotal),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "✓ Producto registrado correctamente",
+                color = Color(0xFF2E7D32),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold
+            )
+        } else {
+            Text(
+                text = "Aún no has registrado ningún producto",
+                color = MaterialTheme.colorScheme.outline,
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
