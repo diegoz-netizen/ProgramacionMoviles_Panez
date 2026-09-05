@@ -101,12 +101,38 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Button(
                 onClick = {
-                    if (nombre.isBlank() || precio.isBlank() || cantidad.isBlank()) {
-                        mensajeError = "Error: Todos los campos son obligatorios"
-                        mostrarResumen = false
-                    } else {
-                        mensajeError = ""
-                        mostrarResumen = true
+                    val precioNum = precio.toDoubleOrNull()
+                    val cantidadNum = cantidad.toIntOrNull()
+
+                    when {
+                        nombre.isBlank() || precio.isBlank() || cantidad.isBlank() -> {
+                            mensajeError = "Error: Todos los campos son obligatorios"
+                            mostrarResumen = false
+                        }
+                        !nombre.matches(Regex("^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ ]+$")) -> {
+                            mensajeError = "Error: El nombre no puede contener caracteres especiales"
+                            mostrarResumen = false
+                        }
+                        precioNum == null -> {
+                            mensajeError = "Error: El precio solo debe contener números válidos"
+                            mostrarResumen = false
+                        }
+                        precioNum <= 0 -> {
+                            mensajeError = "Error: El precio debe ser mayor a 0"
+                            mostrarResumen = false
+                        }
+                        cantidadNum == null -> {
+                            mensajeError = "Error: La cantidad solo debe contener números enteros"
+                            mostrarResumen = false
+                        }
+                        cantidadNum <= 0 -> {
+                            mensajeError = "Error: La cantidad debe ser un número positivo"
+                            mostrarResumen = false
+                        }
+                        else -> {
+                            mensajeError = ""
+                            mostrarResumen = true
+                        }
                     }
                 },
                 modifier = Modifier.weight(1f)
