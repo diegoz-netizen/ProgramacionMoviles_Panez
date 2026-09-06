@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.panez.laboratorio03_tarea.ui.theme.Laboratorio03_TareaTheme
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,6 +44,12 @@ fun PantallaRegistroNotas(modifier: Modifier = Modifier) {
 
     var redondear by remember { mutableStateOf(false) }
     var confirmado by remember { mutableStateOf(false) }
+    var calculado by remember { mutableStateOf(false) }
+
+    var promPonderado by remember { mutableStateOf(0.0) }
+    var promFinalStr by remember { mutableStateOf("") }
+    var observacion by remember { mutableStateOf("") }
+    var colorChip by remember { mutableStateOf(Color.Gray) }
 
     Column(
         modifier = modifier
@@ -101,7 +108,31 @@ fun PantallaRegistroNotas(modifier: Modifier = Modifier) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { /* Lógica pendiente para commit 2 */ },
+                onClick = {
+                    promPonderado = (nota1 * 0.20) + (nota2 * 0.25) + (nota3 * 0.30) + (nota4 * 0.25)
+                    val finalVal = if (redondear) promPonderado.roundToInt().toDouble() else promPonderado
+                    promFinalStr = if (redondear) "${promPonderado.roundToInt()}" else String.format("%.2f", promPonderado)
+
+                    when {
+                        finalVal >= 17.0 -> {
+                            observacion = "EXCELENTE"
+                            colorChip = Color(0xFF1B5E20)
+                        }
+                        finalVal >= 13.0 -> {
+                            observacion = "APROBADO"
+                            colorChip = Color(0xFF4CAF50)
+                        }
+                        finalVal >= 10.0 -> {
+                            observacion = "EN RECUPERACIÓN"
+                            colorChip = Color(0xFFFFB300)
+                        }
+                        else -> {
+                            observacion = "DESAPROBADO"
+                            colorChip = Color(0xFFE53935)
+                        }
+                    }
+                    calculado = true
+                },
                 enabled = confirmado,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -113,11 +144,55 @@ fun PantallaRegistroNotas(modifier: Modifier = Modifier) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "Asigna las notas y confirma para calcular",
-                color = Color.Gray,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
+            if (!calculado) {
+                Text(
+                    text = "Asigna las notas y confirma para calcular",
+                    color = Color.Gray,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            } else {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Promedio ponderado: ${String.format("%.2f", promPonderado)}")
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            Text(
+                                text = "Promedio final: $promFinalStr",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF5E35B1)
+                            )
+                            if (redondear) {
+                                Text(" (redondeado)", fontSize = 12.sp, color = Color.Gray)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Surface(
+                            color = colorChip.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Text(
+                                text = observacion,
+                                color = colorChip,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "✓ Promedio calculated correctamente",
+                    color = Color(0xFF2E7D32),
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
             Text(
