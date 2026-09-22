@@ -13,7 +13,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+<<<<<<< HEAD
 import androidx.compose.material3.OutlinedButton
+=======
+>>>>>>> origin/sin-ia
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -51,7 +54,10 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
     var precio by remember { mutableStateOf("") }
     var cantidad by remember { mutableStateOf("") }
     var mostrarResumen by remember { mutableStateOf(false) }
+<<<<<<< HEAD
     var mensajeError by remember { mutableStateOf("") }
+=======
+>>>>>>> origin/sin-ia
 
     Column(
         modifier = modifier
@@ -98,6 +104,7 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
+<<<<<<< HEAD
         Row(modifier = Modifier.fillMaxWidth()) {
             Button(
                 onClick = {
@@ -154,10 +161,18 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
             ) {
                 Text("LIMPIAR")
             }
+=======
+        Button(
+            onClick = { mostrarResumen = true },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("AGREGAR PRODUCTO")
+>>>>>>> origin/sin-ia
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
+<<<<<<< HEAD
         if (mensajeError.isNotEmpty()) {
             Text(
                 text = mensajeError,
@@ -166,6 +181,9 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
                 fontWeight = FontWeight.Bold
             )
         } else if (mostrarResumen) {
+=======
+        if (mostrarResumen) {
+>>>>>>> origin/sin-ia
             val precioNum = precio.toDoubleOrNull() ?: 0.0
             val cantidadNum = cantidad.toIntOrNull() ?: 0
             val importeTotal = precioNum * cantidadNum

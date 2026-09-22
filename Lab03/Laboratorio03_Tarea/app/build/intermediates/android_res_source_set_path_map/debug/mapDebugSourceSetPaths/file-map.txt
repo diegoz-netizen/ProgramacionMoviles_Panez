@@ -1,0 +1,8 @@
+com.panez.laboratorio03_tarea.app-pngs-0 C:\Users\user\Desktop\Ciclo_4\Programacion_En_Moviles\ProgramacionMoviles_Panez\Lab03\Laboratorio03_Tarea\app\build\generated\res\pngs\debug
+com.panez.laboratorio03_tarea.app-updated_navigation_xml-1 C:\Users\user\Desktop\Ciclo_4\Programacion_En_Moviles\ProgramacionMoviles_Panez\Lab03\Laboratorio03_Tarea\app\build\generated\updated_navigation_xml\debug
+com.panez.laboratorio03_tarea.app-packageDebugResources-2 C:\Users\user\Desktop\Ciclo_4\Programacion_En_Moviles\ProgramacionMoviles_Panez\Lab03\Laboratorio03_Tarea\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.panez.laboratorio03_tarea.app-packageDebugResources-3 C:\Users\user\Desktop\Ciclo_4\Programacion_En_Moviles\ProgramacionMoviles_Panez\Lab03\Laboratorio03_Tarea\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.panez.laboratorio03_tarea.app-debug-4 C:\Users\user\Desktop\Ciclo_4\Programacion_En_Moviles\ProgramacionMoviles_Panez\Lab03\Laboratorio03_Tarea\app\build\intermediates\merged_res\debug\mergeDebugResources
+com.panez.laboratorio03_tarea.app-debug-5 C:\Users\user\Desktop\Ciclo_4\Programacion_En_Moviles\ProgramacionMoviles_Panez\Lab03\Laboratorio03_Tarea\app\src\debug\res
+com.panez.laboratorio03_tarea.app-main-6 C:\Users\user\Desktop\Ciclo_4\Programacion_En_Moviles\ProgramacionMoviles_Panez\Lab03\Laboratorio03_Tarea\app\src\main\res
+gradleHome-0 C:\Users\user\.gradle
