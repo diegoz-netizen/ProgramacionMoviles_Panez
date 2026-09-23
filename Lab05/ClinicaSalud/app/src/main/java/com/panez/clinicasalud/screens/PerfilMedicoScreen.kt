@@ -21,7 +21,6 @@ import com.panez.clinicasalud.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilMedicoScreen(navController: NavHostController, medicoId: Int) {
-    // Busca el médico por id. Si no existe, muestra mensaje simple.
     val medico = listaMedicos.find { it.id == medicoId }
 
     Scaffold(

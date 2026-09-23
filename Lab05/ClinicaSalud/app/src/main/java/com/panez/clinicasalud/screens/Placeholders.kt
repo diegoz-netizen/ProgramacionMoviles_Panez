@@ -8,13 +8,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 @Composable
-fun AgendarCitaScreen(navController: NavHostController, medicoId: Int) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Agendar cita médico #$medicoId (pendiente)")
-    }
-}
-
-@Composable
 fun ConfirmacionScreen(navController: NavHostController, medicoId: Int, fecha: String, hora: String) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text("Confirmación: médico #$medicoId · $fecha · $hora")
