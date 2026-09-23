@@ -7,14 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-
-@Composable
-fun PerfilMedicoScreen(navController: NavHostController, medicoId: Int) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Perfil médico #$medicoId (pendiente)")
-    }
-}
-
 @Composable
 fun AgendarCitaScreen(navController: NavHostController, medicoId: Int) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
