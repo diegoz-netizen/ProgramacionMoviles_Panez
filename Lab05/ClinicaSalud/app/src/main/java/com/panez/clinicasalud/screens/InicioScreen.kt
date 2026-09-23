@@ -35,7 +35,7 @@ fun InicioScreen(navController: NavHostController) {
         drawerContent = {
             ModalDrawerSheet {
                 Spacer(Modifier.height(16.dp))
-                Text("Juan Pérez",
+                Text("Diego Panez",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(horizontal = 16.dp))
                 Text("Paciente",
@@ -89,7 +89,7 @@ fun InicioScreen(navController: NavHostController) {
             }
         ) { padding ->
             Column(modifier = Modifier.padding(padding).padding(16.dp)) {
-                Text("Hola, Juan",
+                Text("Hola, Diego",
                     style = MaterialTheme.typography.bodyMedium,
                     color = GrisTexto)
                 Spacer(Modifier.height(16.dp))
