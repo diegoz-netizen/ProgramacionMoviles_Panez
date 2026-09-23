@@ -2,10 +2,10 @@ package com.panez.tecsupfit.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
-
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val VerdePrincipal = Color(0xFF00695C)
+val VerdeClaro = Color(0xFFB2DFDB)
+val VerdeOscuro = Color(0xFF004D40)
+val VerdeChip = Color(0xFFE0F2F1)
+val GrisTexto = Color(0xFF757575)
+val GrisFondo = Color(0xFFF5F5F5)
+val VerdeEstado = Color(0xFF4CAF50)
