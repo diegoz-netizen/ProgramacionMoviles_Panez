@@ -7,12 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-
-@Composable
-fun InicioScreen(navController: NavHostController) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Inicio") }
-}
-
 @Composable
 fun DetalleClaseScreen(navController: NavHostController, claseId: Int) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Detalle #$claseId") }
