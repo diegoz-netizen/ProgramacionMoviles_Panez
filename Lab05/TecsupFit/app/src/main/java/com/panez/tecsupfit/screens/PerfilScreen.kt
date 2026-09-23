@@ -49,7 +49,7 @@ fun PerfilScreen(navController: NavHostController) {
             }
 
             Spacer(Modifier.height(16.dp))
-            Text("Diego Ramos", style = MaterialTheme.typography.titleLarge)
+            Text("Diego Panez", style = MaterialTheme.typography.titleLarge)
             Text(
                 "Plan Premium", style = MaterialTheme.typography.bodyMedium,
                 color = GrisTexto
