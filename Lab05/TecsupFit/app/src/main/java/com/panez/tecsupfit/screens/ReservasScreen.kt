@@ -1,22 +1,29 @@
 package com.panez.tecsupfit.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.panez.tecsupfit.data.reservasAgendadas
+import com.panez.tecsupfit.model.Reserva
 import com.panez.tecsupfit.ui.theme.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReservasScreen(navController: NavHostController) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    var reservaACancelar by remember { mutableStateOf<Reserva?>(null) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -27,7 +34,8 @@ fun ReservasScreen(navController: NavHostController) {
                 )
             )
         },
-        bottomBar = { BottomBar(navController, "reservas") }
+        bottomBar = { BottomBar(navController, "reservas") },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         if (reservasAgendadas.isEmpty()) {
             Box(
@@ -47,7 +55,11 @@ fun ReservasScreen(navController: NavHostController) {
             ) {
                 items(reservasAgendadas) { reserva ->
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = reserva.estado == "Confirmada") {
+                                reservaACancelar = reserva
+                            },
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Column(Modifier.padding(16.dp)) {
@@ -84,6 +96,35 @@ fun ReservasScreen(navController: NavHostController) {
                     }
                 }
             }
+        }
+
+        if (reservaACancelar != null) {
+            AlertDialog(
+                onDismissRequest = { reservaACancelar = null },
+                title = { Text("¿Cancelar esta reserva?") },
+                text = { Text("Se eliminará la reserva de ${reservaACancelar?.clase?.nombre}.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val item = reservaACancelar
+                            if (item != null) {
+                                reservasAgendadas.remove(item)
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Reserva cancelada")
+                                }
+                            }
+                            reservaACancelar = null
+                        }
+                    ) {
+                        Text("Sí, cancelar", color = Color.Red)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { reservaACancelar = null }) {
+                        Text("No")
+                    }
+                }
+            )
         }
     }
 }

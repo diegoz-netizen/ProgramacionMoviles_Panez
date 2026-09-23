@@ -12,11 +12,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.panez.tecsupfit.data.listaRutinas
+import com.panez.tecsupfit.data.reservasAgendadas
 import com.panez.tecsupfit.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilScreen(navController: NavHostController) {
+    // Solo cuentan las reservas activas (Confirmadas)
+    val clasesReservadas = reservasAgendadas.count { it.estado == "Confirmada" }
+    // Rachas = rutinas completadas
+    val rachas = listaRutinas.count { it.completada }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -30,36 +37,58 @@ fun PerfilScreen(navController: NavHostController) {
         bottomBar = { BottomBar(navController, "perfil") }
     ) { padding ->
         Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(24.dp)
-                .fillMaxSize(),
+            modifier = Modifier.padding(padding).padding(24.dp).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
-                modifier = Modifier
-                    .size(96.dp)
-                    .background(VerdeClaro, CircleShape),
+                modifier = Modifier.size(96.dp).background(VerdeClaro, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    "DR", style = MaterialTheme.typography.headlineMedium,
-                    color = VerdePrincipal, fontWeight = FontWeight.Bold
-                )
+                Text("DR", style = MaterialTheme.typography.headlineMedium,
+                    color = VerdePrincipal, fontWeight = FontWeight.Bold)
             }
 
             Spacer(Modifier.height(16.dp))
             Text("Diego Panez", style = MaterialTheme.typography.titleLarge)
-            Text(
-                "Plan Premium", style = MaterialTheme.typography.bodyMedium,
-                color = GrisTexto
-            )
+            Text("Plan Premium", style = MaterialTheme.typography.bodyMedium,
+                color = GrisTexto)
 
             Spacer(Modifier.height(32.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                StatCard(modifier = Modifier.weight(1f), valor = "14", label = "Clases")
-                StatCard(modifier = Modifier.weight(1f), valor = "3", label = "Rachas")
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    valor = clasesReservadas.toString(),
+                    label = "Clases"
+                )
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    valor = rachas.toString(),
+                    label = "Rachas"
+                )
+            }
+
+            Spacer(Modifier.height(32.dp))
+
+            // Mensaje motivacional según racha
+            val mensaje = when {
+                rachas == 0 -> "¡Empieza tu primera rutina hoy!"
+                rachas <= 2 -> "¡Buen inicio, sigue así!"
+                rachas <= 5 -> "¡Vas por buen camino!"
+                else -> "¡Eres imparable!"
+            }
+
+            Surface(
+                color = VerdeChip,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    mensaje,
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = VerdePrincipal
+                )
             }
         }
     }
@@ -76,10 +105,8 @@ private fun StatCard(modifier: Modifier, valor: String, label: String) {
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                valor, style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
+            Text(valor, style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold)
             Text(label, style = MaterialTheme.typography.bodySmall, color = GrisTexto)
         }
     }
