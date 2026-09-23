@@ -12,7 +12,7 @@ Esta aplicación demuestra los conceptos fundamentales de navegación con Naviga
 4. **RF04 - Retorno desde perfil:** Permitir regresar al inicio desde el perfil limpiando el historial de navegación.
 ---
 
-## 🎨 Prompt de Rediseño UI Definitivo
+## Prompt de Rediseño UI Definitivo
 
 A continuación se detalla el prompt completo y estructurado utilizado para el rediseño estético y visual de los Composables en Jetpack Compose:
 
