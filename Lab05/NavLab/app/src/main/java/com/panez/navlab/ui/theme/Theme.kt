@@ -3,21 +3,21 @@ package com.panez.navlab.ui.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
-    primary = PurplePrimary,
-    onPrimary = CardWhite,
-    primaryContainer = LavenderLight,
-    onPrimaryContainer = PurpleDark,
-    secondary = PurpleMedium,
-    background = LavenderLight,
-    onBackground = TextPrimary,
-    surface = CardWhite,
-    onSurface = TextPrimary,
-    surfaceVariant = GraySecondaryBox,
-    onSurfaceVariant = TextSecondary,
-    error = LogoutRed,
-    errorContainer = LogoutRedBg
+    primary = MoradoPrincipal,
+    onPrimary = Blanco,
+    primaryContainer = LavandaClaro,
+    onPrimaryContainer = MoradoOscuro,
+    secondary = MoradoMedio,
+    background = LavandaClaro,
+    onBackground = Color(0xFF2B2B2B),
+    surface = Blanco,
+    onSurface = Color(0xFF2B2B2B),
+    surfaceVariant = GrisCard,
+    onSurfaceVariant = Color(0xFF6E6E6E),
+    error = RojoCoral
 )
 
 @Composable

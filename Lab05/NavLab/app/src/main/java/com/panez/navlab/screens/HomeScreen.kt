@@ -36,6 +36,7 @@ fun HomeScreen(navController: NavController) {
     var isAuthenticated by rememberSaveable { mutableStateOf(false) }
 
     if (!isAuthenticated) {
+        // PANTALLA 1 — HomeScreen.kt (SOLO estado NO autenticado)
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var passwordVisible by remember { mutableStateOf(false) }
@@ -43,7 +44,15 @@ fun HomeScreen(navController: NavController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFD9CFF0))
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF4A2E83),
+                            Color(0xFF6C4AB6),
+                            Color(0xFFD9CFF0)
+                        )
+                    )
+                )
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -65,7 +74,8 @@ fun HomeScreen(navController: NavController) {
                         text = "Portal Académico",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4A2E83)
+                        color = Color(0xFF4A2E83),
+                        textAlign = TextAlign.Center
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -73,7 +83,8 @@ fun HomeScreen(navController: NavController) {
                     Text(
                         text = "Accede a tu cuenta",
                         fontSize = 14.sp,
-                        color = Color(0xFF6E6E6E)
+                        color = Color(0xFF6E6E6E),
+                        textAlign = TextAlign.Center
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -162,13 +173,15 @@ fun HomeScreen(navController: NavController) {
                         Text(
                             text = "¿Olvidaste tu contraseña?",
                             color = Color(0xFF6C4AB6),
-                            fontSize = 14.sp
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
             }
         }
     } else {
+        // PANTALLA 2 — HomeScreen.kt (SOLO estado autenticado)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -215,6 +228,7 @@ fun HomeScreen(navController: NavController) {
 
                     Spacer(modifier = Modifier.height(36.dp))
 
+                    // Card 1: Directorio de Alumnos
                     Card(
                         onClick = { navController.navigate(Screen.List.route) },
                         modifier = Modifier.fillMaxWidth(),
@@ -270,6 +284,7 @@ fun HomeScreen(navController: NavController) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Card 2: Mi Perfil Académico
                     Card(
                         onClick = { navController.navigate(Screen.Profile.route) },
                         modifier = Modifier.fillMaxWidth(),

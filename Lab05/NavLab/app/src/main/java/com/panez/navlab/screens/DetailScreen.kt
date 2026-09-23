@@ -18,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -39,80 +40,74 @@ fun getStudentById(id: Int): DetailStudentData {
     return when (id) {
         2 -> DetailStudentData(
             id = 2,
-            name = "María García",
+            name = "María García Torres",
             career = "Arquitectura",
-            studentIdCode = "2024-0002",
-            email = "maria.garcia@example.com",
+            studentIdCode = "2026-0002",
+            email = "maria.garcia@tecsup.edu.pe",
             faculty = "Arquitectura y Diseño",
             bio = "Estudiante destacada apasionada por el diseño urbano sostenible y arquitectura digital."
         )
         3 -> DetailStudentData(
             id = 3,
-            name = "Carlos Pérez",
+            name = "Carlos Mendoza Ruiz",
             career = "Medicina",
-            studentIdCode = "2024-0003",
-            email = "carlos.perez@example.com",
+            studentIdCode = "2026-0003",
+            email = "carlos.mendoza@tecsup.edu.pe",
             faculty = "Ciencias de la Salud",
             bio = "Estudiante de medicina enfocado en investigación clínica y salud pública."
         )
         4 -> DetailStudentData(
             id = 4,
-            name = "Ana López",
+            name = "Ana Flores Quispe",
             career = "Derecho",
-            studentIdCode = "2024-0004",
-            email = "ana.lopez@example.com",
+            studentIdCode = "2026-0004",
+            email = "ana.flores@tecsup.edu.pe",
             faculty = "Derecho y Ciencias Políticas",
             bio = "Interesada en derecho corporativo y tecnología jurídica."
         )
         5 -> DetailStudentData(
             id = 5,
-            name = "Luis Ramírez",
+            name = "Luis Ramírez Vargas",
             career = "Administración",
-            studentIdCode = "2024-0005",
-            email = "luis.ramirez@example.com",
+            studentIdCode = "2026-0005",
+            email = "luis.ramirez@tecsup.edu.pe",
             faculty = "Gestión y Negocios",
             bio = "Líder estudiantil con enfoque en emprendimiento e innovación digital."
         )
-        6 -> DetailStudentData(
-            id = 6,
-            name = "Diego Panez ",
-            career = "Software",
-            studentIdCode = "2026-0006",
-            email = "diego.panez@tecsup.edu.pe",
-            faculty = "Tecnologia",
-            bio = "Lidel de Software",
-        )
         else -> DetailStudentData(
             id = if (id > 0) id else 1,
-            name = "Juan León",
-            career = "Ingeniería de Sistemas",
-            studentIdCode = if (id > 0) "2024-000$id" else "2024-0001",
-            email = "juan.leon@example.com",
-            faculty = "Ingeniería y Tecnología",
-            bio = "Estudiante destacado con interés en desarrollo Android."
+            name = "Diego Panez",
+            career = "Diseño y Desarrollo de Software",
+            studentIdCode = "2026-0001",
+            email = "diego.panez@tecsup.edu.pe",
+            faculty = "Tecnología Digital",
+            bio = "Estudiante de V ciclo apasionado por la programación móvil Android, Jetpack Compose y la arquitectura de software moderna."
         )
     }
 }
-
 val ShortWideTrapezoidShape = GenericShape { size, _ ->
     val width = size.width
     val height = size.height
+    val insetAbajo = width * 0.04f
+    val radioAbajo = 32f
 
     moveTo(0f, 0f)
+
     lineTo(width, 0f)
 
-    lineTo(width * 0.94f, height - 16f)
+    lineTo(width - insetAbajo, height - radioAbajo)
     quadraticTo(
-        width * 0.92f, height,
-        width * 0.85f, height
+        width - insetAbajo, height,
+        width - insetAbajo - radioAbajo, height
     )
 
-    lineTo(width * 0.15f, height)
+    lineTo(insetAbajo + radioAbajo, height)
     quadraticTo(
-        width * 0.08f, height,
-        width * 0.06f, height - 16f
+        insetAbajo, height,
+        insetAbajo, height - radioAbajo
     )
 
+    lineTo(0f, 0f)
     close()
 }
 
@@ -157,23 +152,29 @@ fun DetailScreen(navController: NavController, itemId: Int) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(130.dp)
+                    .height(150.dp)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(90.dp)
+                        .height(110.dp)
                         .background(
-                            color = Color(0xFF5B4296),
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color(0xFF5B4296),
+                                    Color(0xFF9B7FD4)
+                                )
+                            ),
                             shape = ShortWideTrapezoidShape
                         )
                 )
 
+                // Avatar circular
                 Surface(
                     modifier = Modifier
-                        .size(88.dp)
+                        .size(96.dp)
                         .align(Alignment.TopCenter)
-                        .offset(y = 46.dp),
+                        .offset(y = 62.dp),
                     shape = CircleShape,
                     color = Color(0xFFEDE7F6),
                     border = BorderStroke(3.dp, Color.White),
@@ -184,7 +185,7 @@ fun DetailScreen(navController: NavController, itemId: Int) {
                             imageVector = Icons.Default.Person,
                             contentDescription = null,
                             tint = Color(0xFF6C4AB6),
-                            modifier = Modifier.size(52.dp)
+                            modifier = Modifier.size(56.dp)
                         )
                     }
                 }
@@ -196,7 +197,7 @@ fun DetailScreen(navController: NavController, itemId: Int) {
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
                     text = student.name,
@@ -236,35 +237,32 @@ fun DetailScreen(navController: NavController, itemId: Int) {
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        DetailItemRow(
+                        DetailItemRowNoCircle(
                             icon = Icons.Default.AccountBox,
                             label = "ID Estudiante",
                             value = student.studentIdCode
                         )
 
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 12.dp),
-                            color = Color(0xFFE7E0EC)
-                        )
+                        Spacer(modifier = Modifier.height(14.dp))
 
-                        DetailItemRow(
+                        DetailItemRowNoCircle(
                             icon = Icons.Default.Email,
                             label = "Correo Electrónico",
                             value = student.email
                         )
 
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 12.dp),
-                            color = Color(0xFFE7E0EC)
-                        )
+                        Spacer(modifier = Modifier.height(14.dp))
 
-                        DetailItemRow(
+                        DetailItemRowNoCircle(
                             icon = Icons.Default.Face,
                             label = "Facultad",
                             value = student.faculty
                         )
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 16.dp),
+                            color = Color(0xFFE7E0EC)
+                        )
 
                         Text(
                             text = "BIOGRAFÍA",
@@ -292,7 +290,7 @@ fun DetailScreen(navController: NavController, itemId: Int) {
 }
 
 @Composable
-private fun DetailItemRow(
+private fun DetailItemRowNoCircle(
     icon: ImageVector,
     label: String,
     value: String
@@ -301,20 +299,12 @@ private fun DetailItemRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Surface(
-            shape = CircleShape,
-            color = Color(0xFFEDE7F6),
-            modifier = Modifier.size(42.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = Color(0xFF6C4AB6),
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-        }
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = Color(0xFF6C4AB6),
+            modifier = Modifier.size(24.dp)
+        )
 
         Spacer(modifier = Modifier.width(16.dp))
 

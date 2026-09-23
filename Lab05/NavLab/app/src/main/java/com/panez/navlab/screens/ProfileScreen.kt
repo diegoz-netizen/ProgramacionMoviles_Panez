@@ -40,7 +40,7 @@ fun ProfileScreen(navController: NavController) {
                         text = "Configuración de Perfil",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4A2E83)
+                        color = Color(0xFF2B2B2B)
                     )
                 },
                 navigationIcon = {
@@ -48,7 +48,7 @@ fun ProfileScreen(navController: NavController) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = Color(0xFF4A2E83)
+                            tint = Color(0xFF2B2B2B)
                         )
                     }
                 },
@@ -65,14 +65,16 @@ fun ProfileScreen(navController: NavController) {
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
         ) {
+            // Header con degradado DIAGONAL de tres tonos: morado/azul (0xFF4A3E85) -> salmón (0xFFB55375) -> dorado suave (0xFFD67B5C)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
                         brush = Brush.linearGradient(
                             colors = listOf(
-                                Color(0xFF5B4B9E),
-                                Color(0xFF6B3E4A)
+                                Color(0xFF4A3E85),
+                                Color(0xFFB55375),
+                                Color(0xFFD67B5C)
                             ),
                             start = Offset(0f, 0f),
                             end = Offset(1000f, 1000f)
@@ -95,7 +97,7 @@ fun ProfileScreen(navController: NavController) {
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = null,
-                                tint = Color(0xFF5B4B9E),
+                                tint = Color(0xFF4A3E85),
                                 modifier = Modifier.size(52.dp)
                             )
                         }
@@ -104,7 +106,7 @@ fun ProfileScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "Diego Panez Rondinel",
+                        text = "Diego Panez",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -119,6 +121,7 @@ fun ProfileScreen(navController: NavController) {
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
             ) {
+                // SECCIÓN 1: INFORMACIÓN PERSONAL (Lista limpia sin cajas ni dividores visibles)
                 Text(
                     text = "INFORMACIÓN PERSONAL",
                     fontSize = 12.sp,
@@ -127,38 +130,33 @@ fun ProfileScreen(navController: NavController) {
                     letterSpacing = 1.sp
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-                ProfileItemRow(
+                ProfileItemRowNoDivider(
                     icon = Icons.Default.Person,
                     label = "Nombre Completo",
-                    value = "Diego Daniel Panez Rondinel"
+                    value = "Diego Panez"
                 )
 
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    color = Color(0xFFE7E0EC)
-                )
+                Spacer(modifier = Modifier.height(16.dp))
 
-                ProfileItemRow(
+                ProfileItemRowNoDivider(
                     icon = Icons.Default.Email,
                     label = "Correo",
                     value = "diego.panez@tecsup.edu.pe"
                 )
 
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    color = Color(0xFFE7E0EC)
-                )
+                Spacer(modifier = Modifier.height(16.dp))
 
-                ProfileItemRow(
+                ProfileItemRowNoDivider(
                     icon = Icons.Default.Phone,
                     label = "Teléfono",
-                    value = "+51 983 928 289"
+                    value = "+51 987 654 321"
                 )
 
                 Spacer(modifier = Modifier.height(28.dp))
 
+                // SECCIÓN 2: ACADÉMICO (Lista limpia sin cajas ni dividores visibles)
                 Text(
                     text = "ACADÉMICO",
                     fontSize = 12.sp,
@@ -167,27 +165,25 @@ fun ProfileScreen(navController: NavController) {
                     letterSpacing = 1.sp
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-                ProfileItemRow(
+                ProfileItemRowNoDivider(
                     icon = Icons.Default.Star,
                     label = "Carrera",
-                    value = "Diseño y desarrollo de Software"
+                    value = "Diseño y Desarrollo de Software"
                 )
 
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    color = Color(0xFFE7E0EC)
-                )
+                Spacer(modifier = Modifier.height(16.dp))
 
-                ProfileItemRow(
+                ProfileItemRowNoDivider(
                     icon = Icons.Default.DateRange,
                     label = "Ciclo Actual",
-                    value = "IV Ciclo"
+                    value = "V Ciclo"
                 )
 
                 Spacer(modifier = Modifier.height(36.dp))
 
+                // Botón "Cerrar Sesión"
                 Button(
                     onClick = {
                         navController.navigate(Screen.Home.route) {
@@ -224,7 +220,7 @@ fun ProfileScreen(navController: NavController) {
 }
 
 @Composable
-private fun ProfileItemRow(
+private fun ProfileItemRowNoDivider(
     icon: ImageVector,
     label: String,
     value: String
@@ -234,15 +230,15 @@ private fun ProfileItemRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Surface(
-            shape = CircleShape,
-            color = Color(0xFFEDE7F6),
+            shape = RoundedCornerShape(12.dp),
+            color = Color(0xFFF2F1F5), // Cuadrado gris muy claro a la izquierda
             modifier = Modifier.size(42.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = Color(0xFF9E9E9E),
+                    tint = Color(0xFF49454F), // Ícono de color GRIS OSCURO / NEGRO SUAVE (0xFF49454F)
                     modifier = Modifier.size(22.dp)
                 )
             }
