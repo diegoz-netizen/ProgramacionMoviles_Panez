@@ -8,16 +8,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 @Composable
-fun DetalleClaseScreen(navController: NavHostController, claseId: Int) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Detalle #$claseId") }
-}
-
-@Composable
-fun ReservarCupoScreen(navController: NavHostController, claseId: Int) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Reservar #$claseId") }
-}
-
-@Composable
 fun ConfirmacionScreen(navController: NavHostController, claseId: Int, horario: String) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Confirmado") }
 }
