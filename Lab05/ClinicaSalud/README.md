@@ -93,11 +93,57 @@ La funcionalidad funciona correctamente:
 - Al confirmar "Sí, cancelar" se elimina la cita de `citasAgendadas`
 - Las citas "Completadas" no responden al toque (clickable deshabilitado)
 
-### RF10 — Cancelar cita (nuevo)
+### Prompt 2 — Snackbar al cancelar cita
 
-| RF | Descripción | Archivo | Cómo verificar |
-|----|-------------|---------|----------------|
-| **RF10** | Cancelar una cita confirmada | `screens/MisCitasScreen.kt` | Mis citas → toca cita "Confirmada" → AlertDialog → "Sí, cancelar" |
+**Prompt usado:**
+En MisCitasScreen.kt, cuando el usuario cancela una cita, muestra un
+Snackbar con el mensaje "Cita cancelada" en la parte inferior de la pantalla.
+
+
+**Respuesta de la IA:**
+
+Gemini agregó:
+- `import kotlinx.coroutines.launch`
+- Estado `snackbarHostState = remember { SnackbarHostState() }` y `scope = rememberCoroutineScope()`
+- `snackbarHost = { SnackbarHost(snackbarHostState) }` en el `Scaffold`
+- Al confirmar cancelación: `scope.launch { snackbarHostState.showSnackbar("Cita cancelada") }`
+
+**Correcciones que tuve que hacer:**
+
+Ninguna. El código compiló y funcionó correctamente a la primera.
+
+
+## Requerimientos Funcionales
+
+| RF | Descripción | Archivo | Cómo verificarlo |
+|----|-------------|---------|------------------|
+| **RF1** | Filtrar médicos por especialidad | `screens/InicioScreen.kt` | Toca un chip "Cardiología" → la lista se filtra |
+| **RF2** | Listar médicos disponibles | `screens/InicioScreen.kt` | Al abrir la app se ven 3 médicos con nombre, especialidad y calificación |
+| **RF3** | Ver perfil del médico seleccionado | `screens/PerfilMedicoScreen.kt` | Toca una tarjeta → se abre el perfil con datos completos |
+| **RF4** | Agendar cita eligiendo fecha y hora | `screens/AgendarCitaScreen.kt` | En perfil, toca "Agendar cita" → elige chip de fecha y hora |
+| **RF5** | Confirmar cita con resumen | `screens/ConfirmacionScreen.kt` | Tras confirmar, se muestra nombre del médico + fecha + hora |
+| **RF6** | Navegar entre secciones con menú lateral | `screens/InicioScreen.kt` | Toca el ícono ≡ → se abre el drawer con 3 destinos |
+| **RF7** | Listar citas agendadas con estado | `screens/MisCitasScreen.kt` | Drawer → "Mis citas" → lista con chip verde "Confirmada" o gris "Completada" |
+| **RF8** | Ver historial de citas completadas | `screens/HistorialScreen.kt` | Drawer → "Historial médico" → muestra la cita con estado "Completada" precargada en DatosMock.kt |
+| **RF9** | Volver al inicio desde confirmación | `screens/ConfirmacionScreen.kt` | Toca "Volver al inicio" en la pantalla de confirmación |
+| **RF10** | Cancelar una cita confirmada | `screens/MisCitasScreen.kt` | Mis citas → toca cita "Confirmada" → AlertDialog → "Sí, cancelar" → Snackbar "Cita cancelada" |
+
+## Flujo de navegación
+
+**Secuencial:** Inicio → Perfil médico → Agendar cita → Confirmación
+**Secundaria (drawer):** Inicio / Mis citas / Historial médico
+
+---
+
+## Uso de IA (Fase 2)
+
+**Herramienta usada:** Gemini Agent (integrado en Android Studio)
+**Modelo:** Gemini 3.6 Flash
+
+### Prompt 1 — Cancelar cita con AlertDialog
+
+**Prompt usado:**
+
 
 ## Capturas
 |   Pantalla Inicio   |   Lista de Elementos    |      Agendar cita       |     Cita confirmada     |

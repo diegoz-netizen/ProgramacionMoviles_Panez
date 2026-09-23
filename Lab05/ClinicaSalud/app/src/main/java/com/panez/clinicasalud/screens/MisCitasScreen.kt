@@ -14,11 +14,14 @@ import androidx.compose.ui.unit.dp
 import com.panez.clinicasalud.data.citasAgendadas
 import com.panez.clinicasalud.model.Cita
 import com.panez.clinicasalud.ui.theme.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MisCitasScreen() {
     var citaACancelar by remember { mutableStateOf<Cita?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -29,6 +32,9 @@ fun MisCitasScreen() {
                     titleContentColor = Color.White
                 )
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
     ) { padding ->
         if (citasAgendadas.isEmpty()) {
@@ -90,6 +96,9 @@ fun MisCitasScreen() {
                     TextButton(onClick = {
                         citasAgendadas.remove(citaACancelar)
                         citaACancelar = null
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Cita cancelada")
+                        }
                     }) {
                         Text("Sí, cancelar", color = Color.Red)
                     }
