@@ -1,4 +1,4 @@
-package com.panez.tecsupfit.screens
+    package com.panez.tecsupfit.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -26,9 +26,16 @@ fun ConfirmacionScreen(
 ) {
     val clase = listaClases.find { it.id == claseId }
 
-    LaunchedEffect(claseId) {
+    LaunchedEffect(Unit) {
         if (clase != null) {
             reservasAgendadas.add(Reserva(clase, horario, "Confirmada"))
+
+            val index = listaClases.indexOfFirst { it.id == clase.id }
+            if (index >= 0 && listaClases[index].cuposDisponibles > 0) {
+                listaClases[index] = listaClases[index].copy(
+                    cuposDisponibles = listaClases[index].cuposDisponibles - 1
+                )
+            }
         }
     }
 

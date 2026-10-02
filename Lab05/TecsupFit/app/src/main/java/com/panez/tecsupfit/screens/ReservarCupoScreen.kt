@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -34,7 +35,12 @@ fun ReservarCupoScreen(navController: NavHostController, claseId: Int) {
             )
             )
         }) { padding ->
-        if (clase == null) return@Scaffold
+        if (clase == null || clase.cuposDisponibles == 0) {
+            Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("No hay cupos disponibles", color = GrisTexto)
+            }
+            return@Scaffold
+        }
 
         Column(
             modifier = Modifier

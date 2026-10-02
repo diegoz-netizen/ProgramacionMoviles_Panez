@@ -25,14 +25,14 @@ fun DetalleClaseScreen(navController: NavHostController, claseId: Int) {
         topBar = {
             TopAppBar(
                 title = { Text("Detalle de clase") }, navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
-                }
-            }, colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = VerdePrincipal,
-                titleContentColor = Color.White,
-                navigationIconContentColor = Color.White
-            )
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
+                    }
+                }, colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = VerdePrincipal,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                )
             )
         }) { padding ->
         if (clase == null) {
@@ -85,16 +85,33 @@ fun DetalleClaseScreen(navController: NavHostController, claseId: Int) {
                 color = GrisTexto
             )
 
+            Spacer(Modifier.height(8.dp))
+            LinearProgressIndicator(
+                progress = { clase.cuposDisponibles.toFloat() / clase.cuposTotales.toFloat() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp),
+                color = VerdePrincipal,
+                trackColor = VerdeClaro,
+            )
+
             Spacer(Modifier.weight(1f))
 
             Button(
                 onClick = { navController.navigate("reservar/${clase.id}") },
+                enabled = clase.cuposDisponibles > 0,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = VerdePrincipal)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = VerdePrincipal,
+                    disabledContainerColor = Color(0xFFBDBDBD)
+                )
             ) {
-                Text("Reservar cupo", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    if (clase.cuposDisponibles > 0) "Reservar cupo" else "Sin cupos disponibles",
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
         }
     }

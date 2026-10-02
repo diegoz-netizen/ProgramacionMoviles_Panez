@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+<<<<<<< HEAD
+import androidx.compose.material3.OutlinedButton
+=======
+>>>>>>> origin/sin-ia
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +54,10 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
     var precio by remember { mutableStateOf("") }
     var cantidad by remember { mutableStateOf("") }
     var mostrarResumen by remember { mutableStateOf(false) }
+<<<<<<< HEAD
+    var mensajeError by remember { mutableStateOf("") }
+=======
+>>>>>>> origin/sin-ia
 
     Column(
         modifier = modifier
@@ -96,16 +104,86 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
+<<<<<<< HEAD
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = {
+                    val precioNum = precio.toDoubleOrNull()
+                    val cantidadNum = cantidad.toIntOrNull()
+
+                    when {
+                        nombre.isBlank() || precio.isBlank() || cantidad.isBlank() -> {
+                            mensajeError = "Error: Todos los campos son obligatorios"
+                            mostrarResumen = false
+                        }
+                        !nombre.matches(Regex("^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ ]+$")) -> {
+                            mensajeError = "Error: El nombre no puede contener caracteres especiales"
+                            mostrarResumen = false
+                        }
+                        precioNum == null -> {
+                            mensajeError = "Error: El precio solo debe contener números válidos"
+                            mostrarResumen = false
+                        }
+                        precioNum <= 0 -> {
+                            mensajeError = "Error: El precio debe ser mayor a 0"
+                            mostrarResumen = false
+                        }
+                        cantidadNum == null -> {
+                            mensajeError = "Error: La cantidad solo debe contener números enteros"
+                            mostrarResumen = false
+                        }
+                        cantidadNum <= 0 -> {
+                            mensajeError = "Error: La cantidad debe ser un número positivo"
+                            mostrarResumen = false
+                        }
+                        else -> {
+                            mensajeError = ""
+                            mostrarResumen = true
+                        }
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("AGREGAR PRODUCTO")
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            OutlinedButton(
+                onClick = {
+                    nombre = ""
+                    precio = ""
+                    cantidad = ""
+                    mostrarResumen = false
+                    mensajeError = ""
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("LIMPIAR")
+            }
+=======
         Button(
             onClick = { mostrarResumen = true },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("AGREGAR PRODUCTO")
+>>>>>>> origin/sin-ia
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
+<<<<<<< HEAD
+        if (mensajeError.isNotEmpty()) {
+            Text(
+                text = mensajeError,
+                color = Color.Red,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold
+            )
+        } else if (mostrarResumen) {
+=======
         if (mostrarResumen) {
+>>>>>>> origin/sin-ia
             val precioNum = precio.toDoubleOrNull() ?: 0.0
             val cantidadNum = cantidad.toIntOrNull() ?: 0
             val importeTotal = precioNum * cantidadNum

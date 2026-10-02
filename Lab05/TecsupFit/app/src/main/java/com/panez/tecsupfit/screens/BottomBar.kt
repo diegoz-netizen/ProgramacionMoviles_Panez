@@ -14,7 +14,8 @@ import androidx.navigation.NavHostController
 
 @Composable
 fun BottomBar(
-    navController: NavHostController, rutaActual: String
+    navController: NavHostController,
+    rutaActual: String
 ) {
     val items = listOf(
         Triple("inicio", "Inicio", Icons.Default.Home),
@@ -25,15 +26,22 @@ fun BottomBar(
 
     NavigationBar {
         items.forEach { (ruta, label, icono) ->
-            NavigationBarItem(selected = rutaActual == ruta, onClick = {
-                if (rutaActual != ruta) {
-                    navController.navigate(ruta) {
-                        popUpTo("inicio") { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+            NavigationBarItem(
+                selected = rutaActual == ruta,
+                onClick = {
+                    if (rutaActual != ruta) {
+                        navController.navigate(ruta) {
+                            popUpTo("inicio") {
+                                inclusive = ruta != "inicio"
+                                saveState = false
+                            }
+                            launchSingleTop = true
+                        }
                     }
-                }
-            }, icon = { Icon(icono, contentDescription = label) }, label = { Text(label) })
+                },
+                icon = { Icon(icono, contentDescription = label) },
+                label = { Text(label) }
+            )
         }
     }
 }
