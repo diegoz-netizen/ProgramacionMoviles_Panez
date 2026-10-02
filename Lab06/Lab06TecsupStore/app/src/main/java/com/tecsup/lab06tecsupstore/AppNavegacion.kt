@@ -44,6 +44,16 @@ fun AppNavegacion() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    // Funcion que alterna el estado de favorito de un producto
+    val toggleFavorito: (Producto) -> Unit = { producto ->
+        val index = listaProductos.indexOfFirst { it.nombre == producto.nombre }
+        if (index != -1) {
+            listaProductos[index] = listaProductos[index].copy(
+                esFavorito = !listaProductos[index].esFavorito
+            )
+        }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -79,7 +89,7 @@ fun AppNavegacion() {
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(listaProductos) { producto ->
-                            ProductCard(producto)
+                            ProductCard(producto = producto)
                         }
                     }
                 }
