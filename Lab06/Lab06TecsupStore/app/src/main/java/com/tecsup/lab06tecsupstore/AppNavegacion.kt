@@ -2,6 +2,7 @@ package com.tecsup.lab06tecsupstore
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,10 +13,12 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +29,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
@@ -34,15 +38,17 @@ import kotlinx.coroutines.launch
 fun AppNavegacion() {
     val listaProductos = remember {
         mutableStateListOf(
-            Producto("Laptop", 2500.0, 1),
-            Producto("Mouse", 50.0, 2),
-            Producto("Teclado", 120.0, 1)
+            Producto("Audífonos", 89.0, 1),
+            Producto("Smartwatch", 199.0, 1),
+            Producto("Funda celular", 25.0, 1)
         )
     }
 
     var pantallaActual by remember { mutableStateOf("Inicio") }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    val cantidadFavoritos = listaProductos.count { it.esFavorito }
 
     val toggleFavorito: (Producto) -> Unit = { producto ->
         val index = listaProductos.indexOfFirst { it.nombre == producto.nombre }
@@ -58,6 +64,7 @@ fun AppNavegacion() {
         drawerContent = {
             AppDrawerContent(
                 pantallaActual = pantallaActual,
+                cantidadFavoritos = cantidadFavoritos,
                 onItemClick = { pantalla ->
                     pantallaActual = pantalla
                     scope.launch { drawerState.close() }
@@ -69,10 +76,26 @@ fun AppNavegacion() {
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 TopAppBar(
-                    title = { Text("TECSUP Store") },
+                    title = {
+                        Column {
+                            Text("TECSUP Store")
+                            Text(
+                                "Mas vendidos",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = Color.White
+                    ),
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                            Icon(
+                                Icons.Default.Menu,
+                                contentDescription = "Menú",
+                                tint = Color.White
+                            )
                         }
                     }
                 )
@@ -123,6 +146,16 @@ fun AppNavegacion() {
                         contentAlignment = Alignment.Center
                     ) {
                         Text("Aquí va tu perfil")
+                    }
+                }
+                "Cerrar sesión" -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Sesión cerrada")
                     }
                 }
             }
