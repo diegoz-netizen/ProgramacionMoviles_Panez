@@ -44,7 +44,6 @@ fun AppNavegacion() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Funcion que alterna el estado de favorito de un producto
     val toggleFavorito: (Producto) -> Unit = { producto ->
         val index = listaProductos.indexOfFirst { it.nombre == producto.nombre }
         if (index != -1) {
@@ -89,7 +88,10 @@ fun AppNavegacion() {
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(listaProductos) { producto ->
-                            ProductCard(producto = producto)
+                            ProductCard(
+                                producto = producto,
+                                onFavoritoClick = { toggleFavorito(producto) }
+                            )
                         }
                     }
                 }

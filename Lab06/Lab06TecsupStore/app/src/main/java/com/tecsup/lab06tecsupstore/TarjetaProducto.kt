@@ -27,7 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ProductCard(producto: Producto) {
+fun ProductCard(
+    producto: Producto,
+    onFavoritoClick: () -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
 
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -51,7 +54,10 @@ fun ProductCard(producto: Producto) {
             ) {
                 DropdownMenuItem(
                     text = { Text("Favoritos") },
-                    onClick = { expanded = false },
+                    onClick = {
+                        onFavoritoClick()
+                        expanded = false
+                    },
                     leadingIcon = { Icon(Icons.Default.Favorite, contentDescription = null) }
                 )
                 HorizontalDivider()
