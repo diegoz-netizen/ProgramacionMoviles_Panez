@@ -189,3 +189,17 @@ fun EstadoVacio(icono: ImageVector, mensaje: String, modifier: Modifier = Modifi
         Text(mensaje, color = TextoSecundario, textAlign = TextAlign.Center)
     }
 }
+
+
+@Composable
+fun ChipHorario(hora: String, seleccionado: Boolean, onClick: () -> Unit) {
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = if (seleccionado) AzulPrimario else AzulClaro,
+        modifier = Modifier.height(42.dp).clickable(onClick = onClick)
+    ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+            Text(hora, color = if (seleccionado) Color.White else AzulPrimario, fontWeight = FontWeight.SemiBold)
+        }
+    }
+}

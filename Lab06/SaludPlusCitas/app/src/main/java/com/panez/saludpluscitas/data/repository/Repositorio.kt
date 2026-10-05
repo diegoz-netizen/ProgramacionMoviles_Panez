@@ -74,4 +74,18 @@ object Repositorio {
 
     fun buscarMedicos(especialidadId: Int, texto: String) =
         medicosPorEspecialidad(especialidadId).filter { it.nombre.contains(texto.trim(), ignoreCase = true) }
+
+
+    val horariosBase = listOf(
+        "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
+        "11:00", "11:30", "14:00", "14:30", "15:00", "15:30"
+    )
+
+    val citas = mutableStateListOf<Cita>()
+    private var siguienteCitaId = 1
+
+    fun horariosDisponibles(medicoId: Int, fecha: String): List<String> {
+        val ocupados = citas.filter { it.medicoId == medicoId && it.fecha == fecha }.map { it.hora }
+        return horariosBase.filter { it !in ocupados }
+    }
 }
