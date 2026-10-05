@@ -124,3 +124,68 @@ fun BarraInferior(seleccionado: Int, onTab: (String) -> Unit) {
         }
     }
 }
+
+
+@Composable
+fun ItemEspecialidad(id: Int, nombre: String, descripcion: String, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(44.dp).background(AzulClaro, CircleShape), contentAlignment = Alignment.Center) {
+                Icon(iconoEspecialidad(id), null, tint = AzulPrimario)
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(nombre, fontWeight = FontWeight.SemiBold)
+                Text(descripcion, color = TextoSecundario, fontSize = 13.sp)
+            }
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = TextoSecundario)
+        }
+    }
+}
+
+@Composable
+fun Avatar(nombre: String, tam: Int = 52) {
+    val iniciales = nombre.split(" ").filter { it.isNotBlank() && !it.endsWith(".") }
+        .take(2).joinToString("") { it.first().uppercase() }
+    Box(Modifier.size(tam.dp).background(AzulClaro, CircleShape), contentAlignment = Alignment.Center) {
+        Text(iniciales, color = AzulPrimario, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+fun TarjetaMedico(medico: Medico, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Avatar(medico.nombre)
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(medico.nombre, fontWeight = FontWeight.SemiBold)
+                Text(medico.descripcion, color = TextoSecundario, fontSize = 13.sp)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.Star, null, tint = NaranjaAcento, modifier = Modifier.size(16.dp))
+                    Text(" ${medico.rating} (${medico.resenas})", fontSize = 13.sp)
+                }
+            }
+            Surface(color = VerdeClaro, shape = RoundedCornerShape(8.dp)) {
+                Text("Disponible hoy", color = VerdeOk, fontSize = 11.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun EstadoVacio(icono: ImageVector, mensaje: String, modifier: Modifier = Modifier) {
+    Column(modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(icono, null, tint = TextoSecundario, modifier = Modifier.size(56.dp))
+        Spacer(Modifier.height(12.dp))
+        Text(mensaje, color = TextoSecundario, textAlign = TextAlign.Center)
+    }
+}
