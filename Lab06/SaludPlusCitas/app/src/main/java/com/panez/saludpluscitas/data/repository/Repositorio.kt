@@ -98,4 +98,18 @@ object Repositorio {
         citas.add(cita)
         return cita
     }
+
+    fun citasDelUsuario(): List<Cita> {
+        val tel = usuarioActual?.telefono ?: return emptyList()
+        return citas.filter { it.usuarioTelefono == tel }.sortedWith(compareBy({ it.fecha }, { it.hora }))
+    }
+
+    fun cancelarCita(id: Int): Boolean = citas.removeIf { it.id == id }
+
+    val resultados = listOf(
+        Resultado(1, "Hemograma completo", "2026-08-12", "Valores dentro del rango normal."),
+        Resultado(2, "Perfil lipídico", "2026-08-12", "Colesterol LDL ligeramente elevado."),
+        Resultado(3, "Radiografía de tórax", "2026-07-03", "Sin hallazgos relevantes."),
+        Resultado(4, "Glucosa en ayunas", "2026-06-20", "Normal: 88 mg/dL.")
+    )
 }
