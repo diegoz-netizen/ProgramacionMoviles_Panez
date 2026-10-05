@@ -77,3 +77,50 @@ fun BarraSuperior(titulo: String, onBack: (() -> Unit)? = null, acciones: @Compo
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
     )
 }
+
+
+@Composable
+fun TarjetaAccion(titulo: String, icono: ImageVector, fondo: Color, tinte: Color, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.height(110.dp).clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = fondo)
+    ) {
+        Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(icono, contentDescription = null, tint = tinte, modifier = Modifier.size(36.dp))
+            Spacer(Modifier.height(8.dp))
+            Text(titulo, fontWeight = FontWeight.SemiBold, color = tinte, textAlign = TextAlign.Center)
+        }
+    }
+}
+
+fun iconoEspecialidad(id: Int): ImageVector = when (id) {
+    1 -> Icons.Filled.MedicalServices
+    2 -> Icons.Filled.ChildCare
+    3 -> Icons.Filled.PregnantWoman
+    4 -> Icons.Filled.Favorite
+    5 -> Icons.Filled.Face
+    6 -> Icons.Filled.Accessibility
+    7 -> Icons.Filled.Visibility
+    else -> Icons.Filled.Psychology
+}
+
+@Composable
+fun BarraInferior(seleccionado: Int, onTab: (String) -> Unit) {
+    val items = listOf(
+        Triple("Inicio", Icons.Filled.Home, Rutas.HOME),
+        Triple("Citas", Icons.Filled.CalendarMonth, Rutas.MIS_CITAS),
+        Triple("Resultados", Icons.Filled.Description, Rutas.RESULTADOS),
+        Triple("Perfil", Icons.Filled.Person, Rutas.PERFIL)
+    )
+    NavigationBar(containerColor = Color.White) {
+        items.forEachIndexed { i, (etiqueta, icono, ruta) ->
+            NavigationBarItem(
+                selected = i == seleccionado,
+                onClick = { if (i != seleccionado) onTab(ruta) },
+                icon = { Icon(icono, contentDescription = etiqueta) },
+                label = { Text(etiqueta) }
+            )
+        }
+    }
+}
