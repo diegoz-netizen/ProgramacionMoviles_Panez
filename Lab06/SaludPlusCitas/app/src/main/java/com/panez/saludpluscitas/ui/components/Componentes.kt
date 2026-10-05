@@ -203,3 +203,15 @@ fun ChipHorario(hora: String, seleccionado: Boolean, onClick: () -> Unit) {
         }
     }
 }
+
+@Composable
+fun FilaDato(icono: ImageVector, titulo: String, valor: String) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Icon(icono, null, tint = AzulPrimario, modifier = Modifier.size(22.dp))
+        Spacer(Modifier.width(12.dp))
+        Column {
+            Text(titulo, color = TextoSecundario, fontSize = 12.sp)
+            Text(valor, fontWeight = FontWeight.Medium)
+        }
+    }
+}

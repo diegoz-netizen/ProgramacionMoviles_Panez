@@ -88,4 +88,14 @@ object Repositorio {
         val ocupados = citas.filter { it.medicoId == medicoId && it.fecha == fecha }.map { it.hora }
         return horariosBase.filter { it !in ocupados }
     }
+
+    fun obtenerCita(id: Int) = citas.find { it.id == id }
+
+    fun agendarCita(medicoId: Int, fecha: String, hora: String, motivo: String): Cita? {
+        if (hora !in horariosDisponibles(medicoId, fecha)) return null
+        val medico = obtenerMedico(medicoId) ?: return null
+        val cita = Cita(siguienteCitaId++, medicoId, medico.especialidadId, fecha, hora, motivo, usuarioActual?.telefono ?: "")
+        citas.add(cita)
+        return cita
+    }
 }
