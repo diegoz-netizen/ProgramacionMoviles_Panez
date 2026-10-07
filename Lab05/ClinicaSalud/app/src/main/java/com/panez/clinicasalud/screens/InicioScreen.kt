@@ -31,17 +31,20 @@ fun InicioScreen(navController: NavHostController) {
     val especialidades = listOf("Todas", "Cardiología", "Pediatría", "Dermatología")
 
     ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
+        drawerState = drawerState, drawerContent = {
             ModalDrawerSheet {
                 Spacer(Modifier.height(16.dp))
-                Text("Diego Panez",
+                Text(
+                    "Diego Panez",
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 16.dp))
-                Text("Paciente",
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                Text(
+                    "Paciente",
                     style = MaterialTheme.typography.bodySmall,
                     color = GrisTexto,
-                    modifier = Modifier.padding(horizontal = 16.dp))
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 NavigationDrawerItem(
@@ -51,13 +54,10 @@ fun InicioScreen(navController: NavHostController) {
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
                 NavigationDrawerItem(
-                    label = { Text("Mis citas") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate("mis_citas")
-                    },
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    label = { Text("Mis citas") }, selected = false, onClick = {
+                    scope.launch { drawerState.close() }
+                    navController.navigate("mis_citas")
+                }, modifier = Modifier.padding(horizontal = 8.dp)
                 )
                 NavigationDrawerItem(
                     label = { Text("Historial médico") },
@@ -69,29 +69,29 @@ fun InicioScreen(navController: NavHostController) {
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }
-        }
-    ) {
+        }) {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Clínica Salud+") },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Abrir menú")
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MoradoPrincipal,
-                        titleContentColor = Color.White,
-                        navigationIconContentColor = Color.White
-                    )
+                    title = { Text("Clínica Salud+") }, navigationIcon = {
+                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                        Icon(Icons.Default.Menu, contentDescription = "Abrir menú")
+                    }
+                }, colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MoradoPrincipal,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
                 )
-            }
-        ) { padding ->
-            Column(modifier = Modifier.padding(padding).padding(16.dp)) {
-                Text("Hola, Diego",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = GrisTexto)
+                )
+            }) { padding ->
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(16.dp)
+            ) {
+                Text(
+                    "Hola, Diego", style = MaterialTheme.typography.bodyMedium, color = GrisTexto
+                )
                 Spacer(Modifier.height(16.dp))
 
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -99,8 +99,7 @@ fun InicioScreen(navController: NavHostController) {
                         FilterChip(
                             selected = esp == especialidadSeleccionada,
                             onClick = { especialidadSeleccionada = esp },
-                            label = { Text(esp) }
-                        )
+                            label = { Text(esp) })
                     }
                 }
 
@@ -108,8 +107,7 @@ fun InicioScreen(navController: NavHostController) {
                 Text("Médicos disponibles", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
 
-                val medicosFiltrados = if (especialidadSeleccionada == "Todas")
-                    listaMedicos
+                val medicosFiltrados = if (especialidadSeleccionada == "Todas") listaMedicos
                 else listaMedicos.filter { it.especialidad == especialidadSeleccionada }
 
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -119,8 +117,7 @@ fun InicioScreen(navController: NavHostController) {
                                 .fillMaxWidth()
                                 .clickable {
                                     navController.navigate("perfil/${medico.id}")
-                                }
-                        ) {
+                                }) {
                             Row(
                                 modifier = Modifier.padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -131,23 +128,30 @@ fun InicioScreen(navController: NavHostController) {
                                         .background(MoradoClaro, CircleShape),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.Default.Add,
+                                    Icon(
+                                        Icons.Default.Add,
                                         contentDescription = null,
-                                        tint = MoradoPrincipal)
+                                        tint = MoradoPrincipal
+                                    )
                                 }
                                 Spacer(Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(medico.nombre,
-                                        style = MaterialTheme.typography.titleSmall)
-                                    Text(medico.especialidad,
+                                    Text(
+                                        medico.nombre, style = MaterialTheme.typography.titleSmall
+                                    )
+                                    Text(
+                                        medico.especialidad,
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = GrisTexto)
+                                        color = GrisTexto
+                                    )
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Star,
+                                    Icon(
+                                        Icons.Default.Star,
                                         contentDescription = null,
                                         tint = Color(0xFFFFC107),
-                                        modifier = Modifier.size(16.dp))
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                     Text(" ${medico.calificacion}")
                                 }
                             }
