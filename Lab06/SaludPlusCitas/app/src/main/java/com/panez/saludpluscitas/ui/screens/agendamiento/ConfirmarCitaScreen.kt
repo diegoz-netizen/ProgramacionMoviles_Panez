@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.panez.saludpluscitas.data.repository.Repositorio
 import com.panez.saludpluscitas.ui.components.*
 import com.panez.saludpluscitas.ui.theme.*
+import com.panez.saludpluscitas.util.fechaLegible
 
 @Composable
 fun ConfirmarCitaScreen(
@@ -50,7 +51,7 @@ fun ConfirmarCitaScreen(
                         }
                     }
                     HorizontalDivider(Modifier.padding(vertical = 8.dp))
-                    FilaDato(Icons.Filled.CalendarMonth, "Fecha", fecha)
+                    FilaDato(Icons.Filled.CalendarMonth, "Fecha", fecha.fechaLegible())
                     FilaDato(Icons.Filled.Schedule, "Hora", hora)
                     FilaDato(Icons.Filled.MedicalServices, "Tipo de atención", "Consulta presencial")
                     FilaDato(Icons.Filled.LocationOn, "Dirección", medico.direccion)
