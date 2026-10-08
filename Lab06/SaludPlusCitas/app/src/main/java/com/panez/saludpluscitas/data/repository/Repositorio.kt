@@ -6,16 +6,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.panez.saludpluscitas.data.model.*
 
-/** Datos en memoria (sin BD). Se pierden al cerrar la app. */
 object Repositorio {
     val usuarios = mutableStateListOf(
-        Usuario("Juan Pérez", "987654321", "juan@correo.com", "123456") // usuario de prueba
+        Usuario("Diego Panez", "987654321", "diego@correo.com", "123456")
     )
 
     var usuarioActual by mutableStateOf<Usuario?>(null)
         private set
 
-    // ---- Usuarios ----
     fun registrarUsuario(u: Usuario): Boolean {
         if (usuarios.any { it.telefono == u.telefono }) return false
         usuarios.add(u)

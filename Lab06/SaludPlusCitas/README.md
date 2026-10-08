@@ -59,3 +59,60 @@ calendario dinámico con fecha en español, e imagen de inicio con este README.
 **Qué tuve que corregir:** Cambié la primera imagen, que tenía un marco gris, por `doc.png`, que
 tiene fondo blanco. Ajusté el tamaño con `aspectRatio` y centré el contenido para que la imagen no
 quedara separada del texto y del botón.
+
+## Preguntas de reflexión
+
+### 1. ¿Por qué los modelos, Rutas.kt y AppNavigation.kt se entregaron completos y las pantallas no? ¿Qué tienen en común los archivos que sí se dejaron como esqueleto?
+
+Creo que esos tres archivos son como el plano de la app: dicen qué datos existen (modelos) y a qué
+pantalla se puede ir desde cuál (rutas y navegación). Tienen que estar bien hechos para que todo
+funcione, pero no era lo que se quería practicar en este laboratorio. Lo que sí se dejó vacío (el
+Repositorio y las pantallas) tiene algo en común: es donde uno tiene que pensar. Ahí se guardan los
+datos, se busca, se filtra, se muestran listas y se reacciona a lo que toca el usuario. Esa es la
+parte donde de verdad se aprende.
+
+### 2. ¿Por qué el Repositorio es un object y no una clase normal? ¿Qué pasaría con las citas si cada pantalla creara su propia lista?
+
+Es un `object` porque así hay una sola copia de los datos que usan todas las pantallas. Si cada
+pantalla tuviera su propia lista, sería como si cada una tuviera su propio cuaderno: yo agendaría la
+cita en la pantalla de Confirmar, pero Mis citas miraría otro cuaderno vacío y nunca la vería. Con
+un solo `object`, todas leen y escriben en el mismo lugar y los datos coinciden en toda la app.
+
+### 3. ¿Cómo lograste que la búsqueda de especialidades y los horarios disponibles se actualicen solos?
+
+Guardé el texto del buscador y las listas de citas en variables que Compose "vigila" (`remember`
+con `mutableStateOf` y `mutableStateListOf`). Cuando algo de eso cambia, por ejemplo cuando escribo
+una letra o se agrega una cita, Compose vuelve a dibujar solo las partes que dependen de eso. Por
+eso no tuve que decirle "actualiza la lista". Con los horarios pasa igual: la lista se calcula a
+partir de las citas que ya existen, así que apenas se reserva una hora, desaparece sola.
+
+### 4. ¿Qué diferencia notaste entre navigate() normal y el que usa popUpTo? ¿Qué pasa al presionar Atrás en cada caso?
+
+Con el `navigate()` normal (Especialidades → Médicos) las pantallas se van apilando una encima de
+otra, y al presionar Atrás vuelvo a la anterior. Con `popUpTo` (Confirmar cita → Cita agendada)
+se borra todo el recorrido del agendamiento (Especialidades, Médicos, Fecha y hora, Confirmar).
+Entonces, al presionar Atrás desde Cita agendada, voy directo al Inicio y no regreso a Confirmar,
+donde podría agendar la misma cita otra vez por error.
+
+### 5. ¿Qué tuviste que corregir del código que te generó la IA para el calendario dinámico?
+
+- Mi proyecto tiene minSdk 24, y `java.time` no funciona bien ahí sin una configuración extra. Tuve
+  que activar `coreLibraryDesugaring` en `build.gradle.kts`.
+- El formato de la fecha no coincidía con el del enunciado, así que lo ajusté a
+  "Martes 16 de setiembre 2026".
+- (Agrega aquí algo que te haya pasado de verdad al probar en el emulador.)
+
+### 6. Compara el NavigationDrawer del Laboratorio 6 con el NavigationBar de esta tarea: ¿en qué caso usarías cada uno en un proyecto propio?
+
+El NavigationBar (la barra de abajo) lo usaría cuando la app tiene pocas secciones principales, de
+3 a 5, que la gente usa todo el tiempo, como Inicio, Citas, Resultados y Perfil aquí. Queda a la
+mano del pulgar y se ve de un vistazo. El NavigationDrawer (el menú lateral) lo usaría cuando la
+app tiene muchas secciones o algunas que se usan poco, como en la tienda del Laboratorio 6, con
+pedidos, favoritos, perfil y cerrar sesión. Ahí es mejor esconderlas en un menú para no llenar la
+pantalla. En un proyecto propio de citas médicas usaría la barra de abajo. En uno con muchas
+opciones de administración usaría el menú lateral, o los dos juntos.
+
+## Capturas de pantalla
+![img.png](img.png) ![img_1.png](img_1.png) ![img_2.png](img_2.png) ![img_3.png](img_3.png) ![img_4.png](img_4.png)
+
+![img_5.png](img_5.png) ![img_6.png](img_6.png) ![img_7.png](img_7.png) ![img_8.png](img_8.png) ![img_9.png](img_9.png)
