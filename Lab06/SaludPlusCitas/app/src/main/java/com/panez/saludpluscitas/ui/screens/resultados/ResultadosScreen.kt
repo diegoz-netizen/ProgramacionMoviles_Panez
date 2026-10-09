@@ -1,19 +1,16 @@
 package com.panez.saludpluscitas.ui.screens.resultados
 
-import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
-import androidx.compose.foundation.shape.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.panez.saludpluscitas.data.repository.Repositorio
@@ -21,24 +18,44 @@ import com.panez.saludpluscitas.ui.components.*
 import com.panez.saludpluscitas.ui.theme.*
 
 @Composable
-fun ResultadosScreen(onTab: (String) -> Unit) {
+fun ResultadosScreen(onMenu: () -> Unit, onTab: (String) -> Unit) {
+    val resultados = Repositorio.resultados
+
     Scaffold(
-        topBar = { BarraSuperior("Resultados") },
+        topBar = { BarraSuperior("Resultados", onMenu = onMenu) },
         bottomBar = { BarraInferior(2, onTab) },
         containerColor = Fondo
     ) { pad ->
-        LazyColumn(Modifier.padding(pad), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            items(Repositorio.resultados) { r ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Column(Modifier.padding(14.dp)) {
-                        Text(r.titulo, fontWeight = FontWeight.SemiBold)
-                        Text(r.fecha, color = AzulPrimario, fontSize = 13.sp)
-                        Spacer(Modifier.height(4.dp))
-                        Text(r.detalle, color = TextoSecundario, fontSize = 13.sp)
+        if (resultados.isEmpty()) {
+            EstadoVacio(
+                Icons.Filled.Description,
+                "Aún no tienes resultados disponibles",
+                Modifier.padding(pad).padding(top = 48.dp)
+            )
+        } else {
+            LazyColumn(
+                Modifier.padding(pad),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                item {
+                    Text("Tus exámenes recientes",
+                        fontWeight = FontWeight.Bold, fontSize = 20.sp,
+                        color = VerdePrincipal,
+                        modifier = Modifier.padding(bottom = 4.dp))
+                }
+                items(resultados) { r ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text(r.titulo, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                            Text(r.fecha, color = VerdePrincipal, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                            Spacer(Modifier.height(6.dp))
+                            Text(r.detalle, color = TextoSecundario, fontSize = 16.sp)
+                        }
                     }
                 }
             }

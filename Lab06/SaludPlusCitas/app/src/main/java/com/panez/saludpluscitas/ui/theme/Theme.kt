@@ -6,12 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val EsquemaClaro = lightColorScheme(
-    primary = AzulPrimario,
+    primary = VerdePrincipal,
     onPrimary = Color.White,
+    secondary = VerdeMedio,
+    onSecondary = Color.White,
     background = Fondo,
     surface = Color.White,
-    secondaryContainer = AzulClaro,
-    onSecondaryContainer = AzulPrimario
+    secondaryContainer = VerdeSuave,
+    onSecondaryContainer = VerdePrincipal
 )
 
 @Composable

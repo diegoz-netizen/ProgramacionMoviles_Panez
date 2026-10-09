@@ -1,23 +1,16 @@
 package com.panez.saludpluscitas.ui.screens.auth
 
-import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
-import androidx.compose.foundation.shape.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.panez.saludpluscitas.data.repository.Repositorio
-import com.panez.saludpluscitas.ui.components.*
+import com.panez.saludpluscitas.ui.components.BarraSuperior
 import com.panez.saludpluscitas.ui.theme.*
 
 @Composable
@@ -31,9 +24,9 @@ fun TerminosScreen(onBack: () -> Unit) {
                 "4. Alcance" to "Esta versión es académica: los datos viven en memoria y se pierden al cerrar la app."
             )
             secciones.forEach { (t, c) ->
-                Text(t, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(t, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Spacer(Modifier.height(4.dp))
-                Text(c, color = TextoSecundario)
+                Text(c, color = TextoSecundario, fontSize = 16.sp)
                 Spacer(Modifier.height(16.dp))
             }
         }

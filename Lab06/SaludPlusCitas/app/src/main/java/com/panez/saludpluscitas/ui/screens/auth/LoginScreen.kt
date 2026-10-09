@@ -1,19 +1,18 @@
 package com.panez.saludpluscitas.ui.screens.auth
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
-import androidx.compose.foundation.shape.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.panez.saludpluscitas.data.repository.Repositorio
@@ -31,8 +30,8 @@ fun LoginScreen(onIngresar: () -> Unit, onRegistro: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(48.dp))
-        Text("Iniciar sesión", fontSize = 26.sp, fontWeight = FontWeight.Bold)
-        Text("Ingresa con tu teléfono o correo", color = TextoSecundario)
+        Text("Iniciar sesión", fontSize = 30.sp, fontWeight = FontWeight.Bold, color = VerdePrincipal)
+        Text("Ingresa con tu teléfono o correo", color = TextoSecundario, fontSize = 17.sp)
         Spacer(Modifier.height(24.dp))
         CampoTexto(id, { id = it; error = null }, "Teléfono o correo", Icons.Filled.Person)
         CampoTexto(clave, { clave = it; error = null }, "Contraseña", Icons.Filled.Lock, esClave = true, error = error)
@@ -42,7 +41,7 @@ fun LoginScreen(onIngresar: () -> Unit, onRegistro: () -> Unit) {
             else if (Repositorio.iniciarSesion(id, clave)) onIngresar()
             else error = "Credenciales incorrectas"
         })
-        TextButton(onClick = onRegistro) { Text("¿No tienes cuenta? Regístrate") }
-        Text("Demo: 987654321 / 123456", fontSize = 12.sp, color = TextoSecundario)
+        TextButton(onClick = onRegistro) { Text("¿No tienes cuenta? Regístrate", fontSize = 16.sp) }
+        Text("Demo: 987654321 / 123456", fontSize = 14.sp, color = TextoSecundario)
     }
 }
