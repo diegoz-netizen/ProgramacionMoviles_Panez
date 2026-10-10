@@ -1,6 +1,7 @@
 package com.panez.saludpluscitas.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -14,6 +15,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -27,12 +31,20 @@ import com.panez.saludpluscitas.data.model.Medico
 import com.panez.saludpluscitas.data.repository.Repositorio
 import com.panez.saludpluscitas.ui.theme.*
 import com.panez.saludpluscitas.navigation.Rutas
+import coil3.compose.AsyncImage
 
 @Composable
-fun BotonPrincipal(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun BotonPrincipal(
+    texto: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    colores: ButtonColors = ButtonDefaults.buttonColors()
+) {
     Button(
         onClick = onClick,
         enabled = enabled,
+        colors = colores,
         modifier = modifier.fillMaxWidth().height(58.dp),
         shape = RoundedCornerShape(14.dp)
     ) { Text(texto, fontWeight = FontWeight.Bold, fontSize = 18.sp) }
@@ -173,34 +185,83 @@ fun Avatar(nombre: String, tam: Int = 52) {
     }
 }
 
+/**
+ * Foto del médico cargada con Coil. Debajo se dibujan las iniciales, así que si no hay
+ * conexión o la imagen falla, se sigue viendo un avatar en lugar de un hueco.
+ */
+@Composable
+fun FotoMedico(
+    medico: Medico,
+    tam: Int = 56,
+    forma: Shape = CircleShape,
+    borde: Color? = null
+) {
+    val base = Modifier.size(tam.dp).clip(forma)
+    Box(
+        if (borde != null) base.border(3.dp, borde, forma) else base,
+        contentAlignment = Alignment.Center
+    ) {
+        Avatar(medico.nombre, tam)
+        AsyncImage(
+            model = medico.foto,
+            contentDescription = "Foto de ${medico.nombre}",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.matchParentSize()
+        )
+    }
+}
+
+private val DIAS_CORTOS = listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
+
+/** "Lun · Mié · Vie" a partir de diasAtencion (1=Lunes). */
+fun Medico.diasTexto(): String = diasAtencion.sorted().joinToString(" · ") { DIAS_CORTOS[it - 1] }
+
+@Composable
+fun EtiquetaEstado(texto: String, fondo: Color, tinte: Color, icono: ImageVector? = null) {
+    Surface(color = fondo, shape = RoundedCornerShape(50)) {
+        Row(Modifier.padding(horizontal = 10.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (icono != null) {
+                Icon(icono, null, tint = tinte, modifier = Modifier.size(14.dp))
+                Spacer(Modifier.width(4.dp))
+            }
+            Text(texto, color = tinte, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        }
+    }
+}
+
 @Composable
 fun TarjetaMedico(medico: Medico, onClick: () -> Unit) {
     val yaTiene = Repositorio.yaTieneCitaCon(medico.id)
     Card(
         modifier = Modifier.fillMaxWidth().clickable(enabled = !yaTiene) { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Avatar(medico.nombre, 56)
+        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            FotoMedico(medico, 84, RoundedCornerShape(18.dp))
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
-                Text(medico.nombre, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
-                Text(medico.descripcion, color = TextoSecundario, fontSize = 15.sp)
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(medico.nombre, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.weight(1f))
                     Icon(Icons.Filled.Star, null, tint = NaranjaAcento, modifier = Modifier.size(18.dp))
-                    Text(" ${medico.rating} (${medico.resenas})", fontSize = 15.sp)
+                    Text(" ${medico.rating}", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                 }
-            }
-            if (yaTiene) {
-                Surface(color = Color(0xFFFFE0E0), shape = RoundedCornerShape(8.dp)) {
-                    Text("Ya agendado", color = Color(0xFFB00020), fontSize = 12.sp,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                Text("${medico.descripcion} · ${medico.cmp}", color = TextoSecundario, fontSize = 14.sp)
+                Spacer(Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.CalendarMonth, null, tint = VerdeMedio, modifier = Modifier.size(16.dp))
+                    Text(" ${medico.diasTexto()}", color = VerdeMedio, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                 }
-            } else {
-                Surface(color = VerdeClaro, shape = RoundedCornerShape(8.dp)) {
-                    Text("Disponible", color = VerdeOk, fontSize = 12.sp,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (yaTiene) {
+                        EtiquetaEstado("Ya agendado", Color(0xFFFFE0E0), Color(0xFFB00020), Icons.Filled.EventBusy)
+                    } else {
+                        EtiquetaEstado("Disponible", VerdeClaro, VerdeOk, Icons.Filled.CheckCircle)
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Text("${medico.resenas} reseñas", color = TextoSecundario, fontSize = 12.sp)
                 }
             }
         }

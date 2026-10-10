@@ -67,23 +67,26 @@ object Repositorio {
     fun obtenerEspecialidad(id: Int) = especialidades.find { it.id == id }
 
     // ---------- MEDICOS ----------
+    // Retratos de prueba servidos por randomuser.me (se muestran con Coil, con iniciales como respaldo)
+    private fun foto(ruta: String) = "https://randomuser.me/api/portraits/$ruta.jpg"
+
     // diasAtencion: 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb, 7=Dom
     val medicos = listOf(
         // Sede Santa Anita (sedeId = 1)
-        Medico(1, "Dr. Carlos Mendoza", 1, 1, "Medicina General", 4.7, 85, "CMP 11201", "Av. Los Álamos 456, Santa Anita", listOf(1, 3, 5)),
-        Medico(2, "Dra. Rosa Quispe", 1, 1, "Medicina General", 4.5, 60, "CMP 11544", "Av. Los Álamos 456, Santa Anita", listOf(2, 4)),
-        Medico(3, "Dra. Claudia Rojas", 2, 1, "Niños y adolescentes", 4.8, 96, "CMP 20987", "Av. Los Álamos 456, Santa Anita", listOf(1, 2, 4)),
-        Medico(4, "Dr. Pedro Salas", 2, 1, "Niños y adolescentes", 4.4, 41, "CMP 21870", "Av. Los Álamos 456, Santa Anita", listOf(3, 5)),
-        Medico(5, "Dra. Ana Torres", 3, 1, "Ginecología", 4.9, 110, "CMP 12345", "Av. Los Álamos 456, Santa Anita", listOf(1, 3, 5)),
-        Medico(6, "Dr. Luis Ramírez", 4, 1, "Cardiología", 4.7, 78, "CMP 13002", "Av. Los Álamos 456, Santa Anita", listOf(2, 4)),
+        Medico(1, "Dr. Carlos Mendoza", 1, 1, "Medicina General", 4.7, 85, "CMP 11201", "Av. Los Álamos 456, Santa Anita", listOf(1, 3, 5), foto("men/32")),
+        Medico(2, "Dra. Rosa Quispe", 1, 1, "Medicina General", 4.5, 60, "CMP 11544", "Av. Los Álamos 456, Santa Anita", listOf(2, 4), foto("women/44")),
+        Medico(3, "Dra. Claudia Rojas", 2, 1, "Niños y adolescentes", 4.8, 96, "CMP 20987", "Av. Los Álamos 456, Santa Anita", listOf(1, 2, 4), foto("women/68")),
+        Medico(4, "Dr. Pedro Salas", 2, 1, "Niños y adolescentes", 4.4, 41, "CMP 21870", "Av. Los Álamos 456, Santa Anita", listOf(3, 5), foto("men/46")),
+        Medico(5, "Dra. Ana Torres", 3, 1, "Ginecología", 4.9, 110, "CMP 12345", "Av. Los Álamos 456, Santa Anita", listOf(1, 3, 5), foto("women/65")),
+        Medico(6, "Dr. Luis Ramírez", 4, 1, "Cardiología", 4.7, 78, "CMP 13002", "Av. Los Álamos 456, Santa Anita", listOf(2, 4), foto("men/52")),
 
         // Sede La Molina (sedeId = 2)
-        Medico(7, "Dra. Mariana Soto", 3, 2, "Ginecología", 4.6, 55, "CMP 14876", "Av. Raúl Ferrero 1200, La Molina", listOf(1, 3)),
-        Medico(8, "Dr. Jorge Paredes", 4, 2, "Cardiología", 4.8, 70, "CMP 09911", "Av. Raúl Ferrero 1200, La Molina", listOf(2, 4, 5)),
-        Medico(9, "Dra. Elena Vargas", 5, 2, "Dermatología", 4.6, 64, "CMP 15620", "Av. Raúl Ferrero 1200, La Molina", listOf(1, 4)),
-        Medico(10, "Dr. Raúl Castillo", 6, 2, "Traumatología", 4.5, 52, "CMP 16033", "Av. Raúl Ferrero 1200, La Molina", listOf(3, 5)),
-        Medico(11, "Dra. Lucía Flores", 7, 2, "Oftalmología", 4.7, 48, "CMP 17744", "Av. Raúl Ferrero 1200, La Molina", listOf(2, 3, 5)),
-        Medico(12, "Dr. Martín Ochoa", 8, 2, "Neurología", 4.8, 39, "CMP 18255", "Av. Raúl Ferrero 1200, La Molina", listOf(1, 4))
+        Medico(7, "Dra. Mariana Soto", 3, 2, "Ginecología", 4.6, 55, "CMP 14876", "Av. Raúl Ferrero 1200, La Molina", listOf(1, 3), foto("women/90")),
+        Medico(8, "Dr. Jorge Paredes", 4, 2, "Cardiología", 4.8, 70, "CMP 09911", "Av. Raúl Ferrero 1200, La Molina", listOf(2, 4, 5), foto("men/75")),
+        Medico(9, "Dra. Elena Vargas", 5, 2, "Dermatología", 4.6, 64, "CMP 15620", "Av. Raúl Ferrero 1200, La Molina", listOf(1, 4), foto("women/17")),
+        Medico(10, "Dr. Raúl Castillo", 6, 2, "Traumatología", 4.5, 52, "CMP 16033", "Av. Raúl Ferrero 1200, La Molina", listOf(3, 5), foto("men/36")),
+        Medico(11, "Dra. Lucía Flores", 7, 2, "Oftalmología", 4.7, 48, "CMP 17744", "Av. Raúl Ferrero 1200, La Molina", listOf(2, 3, 5), foto("women/26")),
+        Medico(12, "Dr. Martín Ochoa", 8, 2, "Neurología", 4.8, 39, "CMP 18255", "Av. Raúl Ferrero 1200, La Molina", listOf(1, 4), foto("men/85"))
     )
 
     fun obtenerMedico(id: Int) = medicos.find { it.id == id }
@@ -150,6 +153,9 @@ object Repositorio {
         return citas.filter { it.usuarioTelefono == tel }
             .sortedWith(compareBy({ it.fecha }, { it.hora }))
     }
+
+    /** Primera cita del usuario (orden por fecha y hora) para destacarla en el inicio. */
+    fun proximaCita(): Cita? = citasDelUsuario().firstOrNull()
 
     fun cancelarCita(id: Int): Boolean = citas.removeIf { it.id == id }
 

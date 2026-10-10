@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.EventBusy
@@ -15,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -24,6 +26,7 @@ import com.panez.saludpluscitas.data.repository.Repositorio
 import com.panez.saludpluscitas.ui.components.*
 import com.panez.saludpluscitas.ui.theme.*
 import com.panez.saludpluscitas.util.etiquetaCorta
+import com.panez.saludpluscitas.util.fechaLarga
 import com.panez.saludpluscitas.util.mesAnio
 import java.time.LocalDate
 
@@ -59,16 +62,44 @@ fun FechaHoraScreen(medicoId: Int, onBack: () -> Unit, onContinuar: (String, Str
     val hayAnterior = offset > 0
     val haySiguiente = todosLosDias.size > (offset + 1) * 5
 
-    Scaffold(topBar = { BarraSuperior("Fecha y hora", onBack) }, containerColor = Fondo) { pad ->
+    Scaffold(
+        topBar = { BarraSuperior("Fecha y hora", onBack) },
+        bottomBar = {
+            // Botón fijo abajo: siempre visible aunque la grilla de horarios sea larga
+            Surface(color = Color.White, shadowElevation = 8.dp) {
+                Column(Modifier.navigationBarsPadding().padding(16.dp)) {
+                    if (hora != null && seleccionado != null) {
+                        Text("${seleccionado!!.fechaLarga()} · $hora", color = VerdeMedio,
+                            fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), textAlign = TextAlign.Center)
+                    }
+                    BotonPrincipal(
+                        "Continuar",
+                        onClick = { onContinuar(seleccionado!!.toString(), hora!!) },
+                        enabled = hora != null && seleccionado != null
+                    )
+                }
+            }
+        },
+        containerColor = Fondo
+    ) { pad ->
         Column(Modifier.padding(pad).padding(16.dp)) {
 
             if (medico != null) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Avatar(medico.nombre)
-                    Spacer(Modifier.width(12.dp))
-                    Column {
-                        Text(medico.nombre, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
-                        Text(medico.descripcion, color = TextoSecundario, fontSize = 15.sp)
+                Card(
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                        FotoMedico(medico, 64, borde = VerdeSuave)
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(medico.nombre, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            Text(medico.descripcion, color = TextoSecundario, fontSize = 14.sp)
+                            Spacer(Modifier.height(4.dp))
+                            EtiquetaEstado("Atiende: ${medico.diasTexto()}", VerdeClaro, VerdeMedio, Icons.Filled.CalendarMonth)
+                        }
                     }
                 }
                 Spacer(Modifier.height(16.dp))
@@ -106,9 +137,10 @@ fun FechaHoraScreen(medicoId: Int, onBack: () -> Unit, onContinuar: (String, Str
                     val sel = d == seleccionado
                     Column(
                         Modifier.weight(1f)
-                            .background(if (sel) VerdePrincipal else Color.White, RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(if (sel) VerdePrincipal else Color.White)
                             .clickable { seleccionado = d; hora = null }
-                            .padding(vertical = 10.dp),
+                            .padding(vertical = 12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(d.etiquetaCorta(), fontSize = 13.sp, color = if (sel) Color.White else TextoSecundario)
@@ -134,13 +166,6 @@ fun FechaHoraScreen(medicoId: Int, onBack: () -> Unit, onContinuar: (String, Str
             if (horarios.isEmpty()) {
                 EstadoVacio(Icons.Filled.EventBusy, "No hay horarios disponibles este día")
             }
-
-            Spacer(Modifier.height(8.dp))
-            BotonPrincipal(
-                "Continuar",
-                onClick = { onContinuar(seleccionado!!.toString(), hora!!) },
-                enabled = hora != null && seleccionado != null
-            )
         }
     }
 }

@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.panez.saludpluscitas.data.repository.Repositorio
 import com.panez.saludpluscitas.ui.components.BotonPrincipal
+import com.panez.saludpluscitas.ui.components.FotoMedico
 import com.panez.saludpluscitas.ui.theme.*
 import com.panez.saludpluscitas.util.fechaLegible
 
@@ -41,12 +42,15 @@ fun CitaExitosaScreen(citaId: Int, onVerMisCitas: () -> Unit, onInicio: () -> Un
         if (cita != null && medico != null) {
             Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = VerdeMedio)) {
                 Column(Modifier.padding(20.dp).fillMaxWidth()) {
-                    Text("Médico", color = VerdeSuave, fontSize = 14.sp)
-                    Text(medico.nombre, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
-                    Spacer(Modifier.height(12.dp))
-                    Text("Especialidad", color = VerdeSuave, fontSize = 14.sp)
-                    Text(medico.descripcion, color = Color.White, fontSize = 20.sp)
-                    Spacer(Modifier.height(12.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        FotoMedico(medico, 60, borde = Color.White)
+                        Spacer(Modifier.width(14.dp))
+                        Column {
+                            Text(medico.nombre, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                            Text(medico.descripcion, color = VerdeSuave, fontSize = 15.sp)
+                        }
+                    }
+                    HorizontalDivider(Modifier.padding(vertical = 14.dp), color = Color.White.copy(alpha = 0.25f))
                     Text("Fecha y hora", color = VerdeSuave, fontSize = 14.sp)
                     Text("${cita.fecha.fechaLegible()} · ${cita.hora}",
                         color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
@@ -54,7 +58,10 @@ fun CitaExitosaScreen(citaId: Int, onVerMisCitas: () -> Unit, onInicio: () -> Un
             }
         }
         Spacer(Modifier.height(28.dp))
-        BotonPrincipal("Ver mi agenda", onVerMisCitas)
+        BotonPrincipal(
+            "Ver mi agenda", onVerMisCitas,
+            colores = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = VerdePrincipal)
+        )
         Spacer(Modifier.height(8.dp))
         TextButton(onClick = onInicio) {
             Text("Volver al inicio", color = VerdeSuave, fontSize = 17.sp)

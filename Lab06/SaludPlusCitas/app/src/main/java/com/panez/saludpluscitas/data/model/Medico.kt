@@ -10,5 +10,6 @@ data class Medico(
     val resenas: Int,
     val cmp: String,
     val direccion: String,
-    val diasAtencion: List<Int> // 1=Lunes ... 7=Domingo
+    val diasAtencion: List<Int>, // 1=Lunes ... 7=Domingo
+    val foto: String // URL del retrato (se carga con Coil)
 )

@@ -122,6 +122,8 @@ fun AppNavigation() {
                     onNotificaciones = { nav.navigate(Rutas.NOTIFICACIONES) },
                     onVerTodas = irAgenda,
                     onEspecialidad = { nav.navigate(Rutas.medicos(it)) },
+                    onMedico = { nav.navigate(Rutas.fechaHora(it)) },
+                    onCita = { nav.navigate(Rutas.detalleCita(it)) },
                     onTab = onTab
                 )
             }
