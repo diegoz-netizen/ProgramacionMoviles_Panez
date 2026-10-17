@@ -3,6 +3,7 @@ package com.tecsup.lavacampus.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tecsup.lavacampus.data.local.entity.Servicio
+import com.tecsup.lavacampus.data.prefs.PreferenciasStore
 import com.tecsup.lavacampus.data.repository.LavaRepository
 import com.tecsup.lavacampus.model.LineaPedido
 import com.tecsup.lavacampus.model.Unidad
@@ -27,13 +28,20 @@ fun Servicio.reglaCantidad(): ReglaCantidad =
     if (unidad == Unidad.KG.name) ReglaCantidad(paso = 0.5, minimo = 1.0, maximo = 10.0)
     else ReglaCantidad(paso = 1.0, minimo = 1.0, maximo = 30.0)
 
-class NuevoPedidoViewModel(private val repo: LavaRepository) : ViewModel() {
+class NuevoPedidoViewModel(
+    private val repo: LavaRepository,
+    prefs: PreferenciasStore
+) : ViewModel() {
 
     private var usuarioId: Int = 0
 
     fun cargar(id: Int) {
         usuarioId = id
     }
+
+    /** Si el administrador apagó "Recibir pedidos", no se puede crear ninguno. */
+    val recibirPedidos: StateFlow<Boolean> = prefs.recibirPedidos
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
     /** Solo servicios ACTIVOS: uno desactivado por el administrador desaparece de aquí. */
     val servicios: StateFlow<List<Servicio>> = repo.observarServiciosActivos()
@@ -103,6 +111,10 @@ class NuevoPedidoViewModel(private val repo: LavaRepository) : ViewModel() {
         val elegidas = lineas.value
         val entrega = fechaEntrega.value
         if (elegidas.isEmpty() || entrega == null || _guardando.value) return
+        if (!recibirPedidos.value) {
+            _mensaje.value = "La lavandería no está recibiendo pedidos"
+            return
+        }
 
         viewModelScope.launch {
             _guardando.value = true

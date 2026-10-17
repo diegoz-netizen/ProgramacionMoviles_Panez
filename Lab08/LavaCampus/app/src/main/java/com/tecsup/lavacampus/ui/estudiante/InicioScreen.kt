@@ -41,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tecsup.lavacampus.data.local.entity.Usuario
 import com.tecsup.lavacampus.data.local.relation.PedidoConDetalle
 import com.tecsup.lavacampus.model.EstadoPedido
+import com.tecsup.lavacampus.ui.components.AvatarIniciales
 import com.tecsup.lavacampus.ui.components.IconoServicio
 import com.tecsup.lavacampus.ui.components.LavaButton
 import com.tecsup.lavacampus.ui.components.PedidoCard
@@ -117,15 +118,7 @@ private fun Saludo(usuario: Usuario) {
             Text("Código ${usuario.codigo}", style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        val iniciales = usuario.nombre.split(" ").filter { it.isNotBlank() }.take(2)
-            .joinToString("") { it.first().uppercase() }
-        Box(
-            Modifier.size(48.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(iniciales, style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer)
-        }
+        AvatarIniciales(usuario.nombre, tam = 48.dp)
     }
 }
 

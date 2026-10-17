@@ -48,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tecsup.lavacampus.model.Casilleros
 import com.tecsup.lavacampus.model.EstadoPedido
 import com.tecsup.lavacampus.ui.components.AppTopBar
+import com.tecsup.lavacampus.ui.components.AvatarIniciales
 import com.tecsup.lavacampus.ui.components.EstadoPedidoChip
 import com.tecsup.lavacampus.ui.components.LavaButton
 import com.tecsup.lavacampus.ui.components.StepperEstado
@@ -87,13 +88,7 @@ fun GestionPedidoScreen(vm: GestionPedidoViewModel, pedidoId: Int, onBack: () ->
             // Estudiante
             Bloque {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val iniciales = d.usuario.nombre.split(" ").filter { it.isNotBlank() }.take(2)
-                        .joinToString("") { it.first().uppercase() }
-                    Box(Modifier.size(46.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                        contentAlignment = Alignment.Center) {
-                        Text(iniciales, style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer)
-                    }
+                    AvatarIniciales(d.usuario.nombre)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(d.usuario.nombre, style = MaterialTheme.typography.titleMedium)

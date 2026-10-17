@@ -68,6 +68,7 @@ fun NuevoPedidoScreen(
     val mensaje by vm.mensaje.collectAsStateWithLifecycle()
     val guardando by vm.guardando.collectAsStateWithLifecycle()
     val pedidoCreado by vm.pedidoCreado.collectAsStateWithLifecycle()
+    val recibe by vm.recibirPedidos.collectAsStateWithLifecycle()
 
     LaunchedEffect(pedidoCreado) {
         if (pedidoCreado != null) onConfirmado()
@@ -86,7 +87,7 @@ fun NuevoPedidoScreen(
                     LavaButton(
                         "Confirmar pedido",
                         onClick = vm::confirmar,
-                        enabled = lineas.isNotEmpty() && !guardando,
+                        enabled = lineas.isNotEmpty() && !guardando && recibe,
                         icono = Icons.Filled.CheckCircle
                     )
                 }
@@ -99,6 +100,15 @@ fun NuevoPedidoScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            if (!recibe) {
+                item {
+                    Surface(color = MaterialTheme.colorScheme.error.copy(alpha = 0.10f),
+                        shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) {
+                        Text("La lavandería no está recibiendo pedidos", color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(14.dp))
+                    }
+                }
+            }
             item {
                 Text("Elige los servicios y la cantidad", style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
