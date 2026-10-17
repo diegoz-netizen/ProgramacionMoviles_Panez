@@ -3,6 +3,7 @@ package com.tecsup.lavacampus
 import android.app.Application
 import com.tecsup.lavacampus.data.local.DatosIniciales
 import com.tecsup.lavacampus.data.local.LavaDatabase
+import com.tecsup.lavacampus.data.prefs.PreferenciasStore
 import com.tecsup.lavacampus.data.repository.LavaRepository
 import com.tecsup.lavacampus.data.repository.LavaRepositoryRoom
 import kotlinx.coroutines.CoroutineScope
@@ -19,12 +20,14 @@ class LavaApp : Application() {
         private set
     lateinit var repository: LavaRepository
         private set
-    // TODO (Paso 5): crea aquí PreferenciasStore
+    lateinit var preferencias: PreferenciasStore
+        private set
 
     override fun onCreate() {
         super.onCreate()
         db = LavaDatabase.obtener(this)
         repository = LavaRepositoryRoom(db)
+        preferencias = PreferenciasStore(this)
         scope.launch { DatosIniciales.sembrar(db) }
     }
 }
