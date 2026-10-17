@@ -40,9 +40,11 @@ import com.tecsup.lavacampus.ui.components.ItemBarra
 import com.tecsup.lavacampus.ui.components.LavaButton
 import com.tecsup.lavacampus.ui.estudiante.InicioScreen
 import com.tecsup.lavacampus.ui.estudiante.LoginScreen
+import com.tecsup.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.tecsup.lavacampus.ui.estudiante.SplashScreen
 import com.tecsup.lavacampus.viewmodel.InicioViewModel
 import com.tecsup.lavacampus.viewmodel.LavaViewModelFactory
+import com.tecsup.lavacampus.viewmodel.NuevoPedidoViewModel
 import com.tecsup.lavacampus.viewmodel.ServiciosViewModel
 import com.tecsup.lavacampus.viewmodel.SesionViewModel
 
@@ -123,10 +125,18 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
             )
         }
 
-        // TODO (Paso 8): reemplazar por NuevoPedidoScreen
         composable(Rutas.NUEVO_PEDIDO) {
-            PantallaProvisional("Nuevo pedido", "Se construye en el Paso 8",
-                acciones = listOf("Volver" to { nav.popBackStack() }))
+            val u = usuario ?: return@composable
+            val vm: NuevoPedidoViewModel = viewModel(factory = factory)
+            NuevoPedidoScreen(
+                vm = vm,
+                usuario = u,
+                onBack = { nav.popBackStack() },
+                onConfirmado = {
+                    nav.popBackStack()
+                    irAPestana(Rutas.MIS_PEDIDOS)
+                }
+            )
         }
 
         // TODO (Paso 9): reemplazar por DetallePedidoScreen
