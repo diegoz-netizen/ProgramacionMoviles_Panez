@@ -23,3 +23,9 @@ val Borde = Color(0xFFE2E8F0)
 val FondoOscuro = Color(0xFF0B1120)
 val SuperficieOscura = Color(0xFF111827)
 val RojoError = Color(0xFFDC2626)
+
+// ---------- Gráficos ----------
+/** Colores para series sin color propio (ingresos por servicio). */
+val PaletaGraficos = listOf(
+    Color(0xFF6D28D9), Color(0xFF0891B2), Color(0xFFD97706), Color(0xFF16A34A), Color(0xFFDB2777)
+)

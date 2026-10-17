@@ -38,11 +38,16 @@ import com.tecsup.lavacampus.viewmodel.ServiciosViewModel
 
 /** La View solo observa el estado del ViewModel y le avisa los eventos. */
 @Composable
-fun ServiciosScreen(vm: ServiciosViewModel, onEditar: (Int) -> Unit) {
+fun ServiciosScreen(
+    vm: ServiciosViewModel,
+    onEditar: (Int) -> Unit,
+    barraInferior: @Composable () -> Unit = {}
+) {
     val servicios by vm.servicios.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = { AppTopBar("Servicios") },
+        bottomBar = barraInferior,
         floatingActionButton = {
             FloatingActionButton(onClick = { onEditar(0) }) {
                 Icon(Icons.Filled.Add, contentDescription = "Nuevo servicio")
