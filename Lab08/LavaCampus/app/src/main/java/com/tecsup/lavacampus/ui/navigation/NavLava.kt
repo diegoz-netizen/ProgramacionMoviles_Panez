@@ -41,11 +41,14 @@ import com.tecsup.lavacampus.ui.components.LavaButton
 import com.tecsup.lavacampus.ui.estudiante.DetallePedidoScreen
 import com.tecsup.lavacampus.ui.estudiante.InicioScreen
 import com.tecsup.lavacampus.ui.estudiante.LoginScreen
+import com.tecsup.lavacampus.ui.estudiante.MisPedidosScreen
 import com.tecsup.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.tecsup.lavacampus.ui.estudiante.SplashScreen
+import com.tecsup.lavacampus.ui.estudiante.TarifasScreen
 import com.tecsup.lavacampus.viewmodel.DetallePedidoViewModel
 import com.tecsup.lavacampus.viewmodel.InicioViewModel
 import com.tecsup.lavacampus.viewmodel.LavaViewModelFactory
+import com.tecsup.lavacampus.viewmodel.MisPedidosViewModel
 import com.tecsup.lavacampus.viewmodel.NuevoPedidoViewModel
 import com.tecsup.lavacampus.viewmodel.ServiciosViewModel
 import com.tecsup.lavacampus.viewmodel.SesionViewModel
@@ -150,14 +153,21 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
             DetallePedidoScreen(vm = vm, pedidoId = id, onBack = { nav.popBackStack() })
         }
 
-        // TODO (Paso 10): reemplazar por MisPedidosScreen
         composable(Rutas.MIS_PEDIDOS) {
-            PantallaProvisional("Mis pedidos", "Se construye en el Paso 10", barraInferior = barraEstudiante)
+            val u = usuario ?: return@composable
+            val vm: MisPedidosViewModel = viewModel(factory = factory)
+            MisPedidosScreen(
+                vm = vm,
+                usuario = u,
+                onPedido = { nav.navigate(Rutas.detallePedido(it)) },
+                onNuevoPedido = { nav.navigate(Rutas.NUEVO_PEDIDO) },
+                barraInferior = barraEstudiante
+            )
         }
 
-        // TODO (Paso 10): reemplazar por TarifasScreen
         composable(Rutas.TARIFAS) {
-            PantallaProvisional("Tarifas", "Se construye en el Paso 10", barraInferior = barraEstudiante)
+            val vm: ServiciosViewModel = viewModel(factory = factory)
+            TarifasScreen(vm = vm, barraInferior = barraEstudiante)
         }
 
         // TODO (Paso 13): reemplazar por PerfilScreen
