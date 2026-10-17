@@ -38,10 +38,12 @@ import com.tecsup.lavacampus.ui.administrador.ServiciosScreen
 import com.tecsup.lavacampus.ui.components.BarraInferior
 import com.tecsup.lavacampus.ui.components.ItemBarra
 import com.tecsup.lavacampus.ui.components.LavaButton
+import com.tecsup.lavacampus.ui.estudiante.DetallePedidoScreen
 import com.tecsup.lavacampus.ui.estudiante.InicioScreen
 import com.tecsup.lavacampus.ui.estudiante.LoginScreen
 import com.tecsup.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.tecsup.lavacampus.ui.estudiante.SplashScreen
+import com.tecsup.lavacampus.viewmodel.DetallePedidoViewModel
 import com.tecsup.lavacampus.viewmodel.InicioViewModel
 import com.tecsup.lavacampus.viewmodel.LavaViewModelFactory
 import com.tecsup.lavacampus.viewmodel.NuevoPedidoViewModel
@@ -139,14 +141,13 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
             )
         }
 
-        // TODO (Paso 9): reemplazar por DetallePedidoScreen
         composable(
             Rutas.DETALLE_PEDIDO,
             arguments = listOf(navArgument("pedidoId") { type = NavType.IntType })
         ) { entrada ->
             val id = entrada.arguments?.getInt("pedidoId") ?: 0
-            PantallaProvisional("Pedido #$id", "El detalle se construye en el Paso 9",
-                acciones = listOf("Volver" to { nav.popBackStack() }))
+            val vm: DetallePedidoViewModel = viewModel(factory = factory)
+            DetallePedidoScreen(vm = vm, pedidoId = id, onBack = { nav.popBackStack() })
         }
 
         // TODO (Paso 10): reemplazar por MisPedidosScreen

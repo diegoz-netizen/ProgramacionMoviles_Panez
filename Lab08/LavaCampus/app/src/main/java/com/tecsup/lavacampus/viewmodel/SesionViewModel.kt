@@ -77,9 +77,10 @@ class SesionViewModel(
     }
 
     fun cerrarSesion() {
-        viewModelScope.launch {
-            prefs.cerrarSesion()
-            _usuarioActual.value = null
-        }
+        // Primero se limpia el usuario en memoria (de inmediato), luego DataStore.
+        // Si fuera al revés, el Login vería todavía al usuario anterior y lo reenviaría a su pantalla.
+        _usuarioActual.value = null
+        _error.value = null
+        viewModelScope.launch { prefs.cerrarSesion() }
     }
 }
