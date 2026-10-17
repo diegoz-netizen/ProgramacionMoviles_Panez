@@ -1,5 +1,6 @@
 package com.tecsup.lavacampus.ui.components
 
+import com.tecsup.lavacampus.data.local.entity.Servicio
 import com.tecsup.lavacampus.data.local.relation.PedidoConDetalle
 import com.tecsup.lavacampus.model.Unidad
 import java.time.LocalDate
@@ -41,3 +42,14 @@ fun cantidadConUnidad(cantidad: Double, unidad: String): String {
 /** "3 kg Lavado y secado · 4 prendas Planchado" */
 fun PedidoConDetalle.resumen(): String =
     detalles.joinToString(" · ") { "${cantidadConUnidad(it.detalle.cantidad, it.servicio.unidad)} ${it.servicio.nombre}" }
+
+/** Unidad de cobro en texto: KG -> "por kg", PRENDA -> "por prenda", UNIDAD -> "por unidad". */
+fun Servicio.textoUnidad(): String = when (unidad) {
+    Unidad.KG.name -> "por kg"
+    Unidad.PRENDA.name -> "por prenda"
+    Unidad.UNIDAD.name -> "por unidad"
+    else -> "por ${unidad.lowercase()}"
+}
+
+/** "S/ 8.00 por kg" */
+fun Servicio.textoPrecio(): String = "${soles(precio)} ${textoUnidad()}"
