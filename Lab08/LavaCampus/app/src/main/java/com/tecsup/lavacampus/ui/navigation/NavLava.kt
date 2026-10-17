@@ -39,6 +39,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.tecsup.lavacampus.model.Rol
+import com.tecsup.lavacampus.ui.administrador.BandejaScreen
+import com.tecsup.lavacampus.ui.administrador.GestionPedidoScreen
 import com.tecsup.lavacampus.ui.administrador.PanelScreen
 import com.tecsup.lavacampus.ui.administrador.ServiciosScreen
 import com.tecsup.lavacampus.ui.components.BarraInferior
@@ -51,7 +53,9 @@ import com.tecsup.lavacampus.ui.estudiante.MisPedidosScreen
 import com.tecsup.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.tecsup.lavacampus.ui.estudiante.SplashScreen
 import com.tecsup.lavacampus.ui.estudiante.TarifasScreen
+import com.tecsup.lavacampus.viewmodel.BandejaViewModel
 import com.tecsup.lavacampus.viewmodel.DetallePedidoViewModel
+import com.tecsup.lavacampus.viewmodel.GestionPedidoViewModel
 import com.tecsup.lavacampus.viewmodel.InicioViewModel
 import com.tecsup.lavacampus.viewmodel.LavaViewModelFactory
 import com.tecsup.lavacampus.viewmodel.MisPedidosViewModel
@@ -209,9 +213,22 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
             )
         }
 
-        // TODO (Paso 12): reemplazar por BandejaScreen
         composable(Rutas.BANDEJA) {
-            PantallaProvisional("Pedidos", "La bandeja se construye en el Paso 12", barraInferior = barraAdministrador)
+            val vm: BandejaViewModel = viewModel(factory = factory)
+            BandejaScreen(
+                vm = vm,
+                onAbrir = { nav.navigate(Rutas.gestionPedido(it)) },
+                barraInferior = barraAdministrador
+            )
+        }
+
+        composable(
+            Rutas.GESTION_PEDIDO,
+            arguments = listOf(navArgument("pedidoId") { type = NavType.IntType })
+        ) { entrada ->
+            val id = entrada.arguments?.getInt("pedidoId") ?: 0
+            val vm: GestionPedidoViewModel = viewModel(factory = factory)
+            GestionPedidoScreen(vm = vm, pedidoId = id, onBack = { nav.popBackStack() })
         }
 
         composable(Rutas.SERVICIOS) {
