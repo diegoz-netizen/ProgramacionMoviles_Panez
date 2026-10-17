@@ -8,9 +8,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.LocalLaundryService
 import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -34,6 +39,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.tecsup.lavacampus.model.Rol
+import com.tecsup.lavacampus.ui.administrador.PanelScreen
 import com.tecsup.lavacampus.ui.administrador.ServiciosScreen
 import com.tecsup.lavacampus.ui.components.BarraInferior
 import com.tecsup.lavacampus.ui.components.ItemBarra
@@ -50,8 +56,18 @@ import com.tecsup.lavacampus.viewmodel.InicioViewModel
 import com.tecsup.lavacampus.viewmodel.LavaViewModelFactory
 import com.tecsup.lavacampus.viewmodel.MisPedidosViewModel
 import com.tecsup.lavacampus.viewmodel.NuevoPedidoViewModel
+import com.tecsup.lavacampus.viewmodel.PanelViewModel
 import com.tecsup.lavacampus.viewmodel.ServiciosViewModel
 import com.tecsup.lavacampus.viewmodel.SesionViewModel
+
+/** Los 5 destinos de la barra inferior del administrador. */
+private val itemsAdministrador = listOf(
+    ItemBarra(Rutas.PANEL, "Panel", Icons.Filled.Dashboard),
+    ItemBarra(Rutas.BANDEJA, "Pedidos", Icons.Filled.Inbox),
+    ItemBarra(Rutas.SERVICIOS, "Servicios", Icons.Filled.LocalLaundryService),
+    ItemBarra(Rutas.CLIENTES, "Clientes", Icons.Filled.Groups),
+    ItemBarra(Rutas.AJUSTES, "Ajustes", Icons.Filled.Settings)
+)
 
 /** Los 4 destinos de la barra inferior del estudiante. */
 private val itemsEstudiante = listOf(
@@ -94,6 +110,9 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
 
     val barraEstudiante: @Composable () -> Unit = {
         BarraInferior(itemsEstudiante, rutaActual, ::irAPestana)
+    }
+    val barraAdministrador: @Composable () -> Unit = {
+        BarraInferior(itemsAdministrador, rutaActual, ::irAPestana)
     }
 
     NavHost(navController = nav, startDestination = Rutas.SPLASH) {
@@ -180,23 +199,43 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
         }
 
         // ---------- Administrador ----------
-        // TODO (Paso 11): reemplazar por PanelScreen
         composable(Rutas.PANEL) {
-            PantallaProvisional(
-                "Hola, ${usuario?.nombre ?: ""}", "Panel del administrador (Paso 11)",
-                acciones = listOf(
-                    "Ver servicios" to { nav.navigate(Rutas.SERVICIOS) },
-                    "Cerrar sesión" to { sesion.cerrarSesion(); irALogin() }
-                )
+            val vm: PanelViewModel = viewModel(factory = factory)
+            PanelScreen(
+                vm = vm,
+                nombreAdmin = usuario?.nombre ?: "",
+                onVerPorRecoger = { irAPestana(Rutas.BANDEJA) },
+                barraInferior = barraAdministrador
             )
+        }
+
+        // TODO (Paso 12): reemplazar por BandejaScreen
+        composable(Rutas.BANDEJA) {
+            PantallaProvisional("Pedidos", "La bandeja se construye en el Paso 12", barraInferior = barraAdministrador)
         }
 
         composable(Rutas.SERVICIOS) {
             val vm: ServiciosViewModel = viewModel(factory = factory)
-            ServiciosScreen(vm = vm, onEditar = { /* TODO (Paso 13): nav.navigate(Rutas.formularioServicio(it)) */ })
+            ServiciosScreen(
+                vm = vm,
+                onEditar = { /* TODO (Paso 13): nav.navigate(Rutas.formularioServicio(it)) */ },
+                barraInferior = barraAdministrador
+            )
         }
 
-        // TODO (Pasos 11 a 13): destinos del administrador (NavigationBar de 5 ítems)
+        // TODO (Paso 13): reemplazar por ClientesScreen
+        composable(Rutas.CLIENTES) {
+            PantallaProvisional("Clientes", "Se construye en el Paso 13", barraInferior = barraAdministrador)
+        }
+
+        // TODO (Paso 13): reemplazar por AjustesScreen
+        composable(Rutas.AJUSTES) {
+            PantallaProvisional(
+                usuario?.nombre ?: "Ajustes", "Los ajustes se construyen en el Paso 13",
+                acciones = listOf("Cerrar sesión" to { sesion.cerrarSesion(); irALogin() }),
+                barraInferior = barraAdministrador
+            )
+        }
     }
 }
 
