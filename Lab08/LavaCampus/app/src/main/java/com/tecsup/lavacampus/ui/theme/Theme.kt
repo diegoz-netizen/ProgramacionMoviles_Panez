@@ -20,6 +20,12 @@ private fun esquemaClaro(primario: Color, contenedor: Color, fondo: Color) = lig
     onBackground = TextoPrincipal,
     surface = Color.White,
     onSurface = TextoPrincipal,
+    // Diálogos, menús y hojas usan los surfaceContainer: se dejan neutros para no heredar el lila por defecto
+    surfaceContainerLowest = Color.White,
+    surfaceContainerLow = Color.White,
+    surfaceContainer = Color.White,
+    surfaceContainerHigh = Color.White,
+    surfaceContainerHighest = fondo,
     surfaceVariant = fondo,
     onSurfaceVariant = TextoSecundario,
     outline = Borde,
@@ -36,6 +42,11 @@ private fun esquemaOscuro(primario: Color, contenedor: Color) = darkColorScheme(
     onSecondaryContainer = Color.White,
     background = FondoOscuro,
     surface = SuperficieOscura,
+    surfaceContainerLowest = FondoOscuro,
+    surfaceContainerLow = SuperficieOscura,
+    surfaceContainer = SuperficieOscura,
+    surfaceContainerHigh = SuperficieOscura,
+    surfaceContainerHighest = SuperficieOscura,
     surfaceVariant = SuperficieOscura,
     error = RojoError
 )
