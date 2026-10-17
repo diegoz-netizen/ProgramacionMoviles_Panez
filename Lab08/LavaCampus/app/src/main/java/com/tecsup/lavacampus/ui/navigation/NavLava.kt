@@ -6,8 +6,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocalOffer
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,22 +27,39 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.tecsup.lavacampus.model.Rol
 import com.tecsup.lavacampus.ui.administrador.ServiciosScreen
+import com.tecsup.lavacampus.ui.components.BarraInferior
+import com.tecsup.lavacampus.ui.components.ItemBarra
 import com.tecsup.lavacampus.ui.components.LavaButton
+import com.tecsup.lavacampus.ui.estudiante.InicioScreen
 import com.tecsup.lavacampus.ui.estudiante.LoginScreen
 import com.tecsup.lavacampus.ui.estudiante.SplashScreen
+import com.tecsup.lavacampus.viewmodel.InicioViewModel
 import com.tecsup.lavacampus.viewmodel.LavaViewModelFactory
 import com.tecsup.lavacampus.viewmodel.ServiciosViewModel
 import com.tecsup.lavacampus.viewmodel.SesionViewModel
+
+/** Los 4 destinos de la barra inferior del estudiante. */
+private val itemsEstudiante = listOf(
+    ItemBarra(Rutas.INICIO, "Inicio", Icons.Filled.Home),
+    ItemBarra(Rutas.MIS_PEDIDOS, "Pedidos", Icons.AutoMirrored.Filled.ReceiptLong),
+    ItemBarra(Rutas.TARIFAS, "Tarifas", Icons.Filled.LocalOffer),
+    ItemBarra(Rutas.PERFIL, "Perfil", Icons.Filled.Person)
+)
 
 @Composable
 fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
     val nav = rememberNavController()
     val usuario by sesion.usuarioActual.collectAsStateWithLifecycle()
+    val entradaActual by nav.currentBackStackEntryAsState()
+    val rutaActual = entradaActual?.destination?.route
 
     /** Pantalla principal de cada perfil; limpia la pila para que "atrás" no vuelva al login. */
     fun irAPrincipal(rol: Rol) {
@@ -47,6 +70,23 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
 
     fun irALogin() {
         nav.navigate(Rutas.LOGIN) { popUpTo(0) { inclusive = true } }
+    }
+
+    /**
+     * Cambio de pestaña: vuelve a la raíz del perfil (Inicio o Panel) sin apilar pestañas repetidas
+     * y conserva el estado de cada una.
+     */
+    fun irAPestana(ruta: String) {
+        val raiz = if (usuario?.rol == Rol.ADMIN.name) Rutas.PANEL else Rutas.INICIO
+        nav.navigate(ruta) {
+            popUpTo(raiz) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
+    val barraEstudiante: @Composable () -> Unit = {
+        BarraInferior(itemsEstudiante, rutaActual, ::irAPestana)
     }
 
     NavHost(navController = nav, startDestination = Rutas.SPLASH) {
@@ -68,22 +108,65 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
             LoginScreen(vm = sesion, onIngresar = ::irAPrincipal)
         }
 
-        // TODO (Paso 7): reemplazar por InicioScreen
+        // ---------- Estudiante ----------
         composable(Rutas.INICIO) {
-            PantallaProvisional(
-                titulo = "Hola, ${usuario?.nombre ?: ""}",
-                mensaje = "Inicio del estudiante (Paso 7)",
-                onCerrarSesion = { sesion.cerrarSesion(); irALogin() }
+            val u = usuario ?: return@composable
+            val vm: InicioViewModel = viewModel(factory = factory)
+            InicioScreen(
+                vm = vm,
+                usuario = u,
+                onNuevoPedido = { nav.navigate(Rutas.NUEVO_PEDIDO) },
+                onMisPedidos = { irAPestana(Rutas.MIS_PEDIDOS) },
+                onTarifas = { irAPestana(Rutas.TARIFAS) },
+                onPedido = { nav.navigate(Rutas.detallePedido(it)) },
+                barraInferior = barraEstudiante
             )
         }
 
+        // TODO (Paso 8): reemplazar por NuevoPedidoScreen
+        composable(Rutas.NUEVO_PEDIDO) {
+            PantallaProvisional("Nuevo pedido", "Se construye en el Paso 8",
+                acciones = listOf("Volver" to { nav.popBackStack() }))
+        }
+
+        // TODO (Paso 9): reemplazar por DetallePedidoScreen
+        composable(
+            Rutas.DETALLE_PEDIDO,
+            arguments = listOf(navArgument("pedidoId") { type = NavType.IntType })
+        ) { entrada ->
+            val id = entrada.arguments?.getInt("pedidoId") ?: 0
+            PantallaProvisional("Pedido #$id", "El detalle se construye en el Paso 9",
+                acciones = listOf("Volver" to { nav.popBackStack() }))
+        }
+
+        // TODO (Paso 10): reemplazar por MisPedidosScreen
+        composable(Rutas.MIS_PEDIDOS) {
+            PantallaProvisional("Mis pedidos", "Se construye en el Paso 10", barraInferior = barraEstudiante)
+        }
+
+        // TODO (Paso 10): reemplazar por TarifasScreen
+        composable(Rutas.TARIFAS) {
+            PantallaProvisional("Tarifas", "Se construye en el Paso 10", barraInferior = barraEstudiante)
+        }
+
+        // TODO (Paso 13): reemplazar por PerfilScreen
+        composable(Rutas.PERFIL) {
+            PantallaProvisional(
+                usuario?.nombre ?: "Perfil", "El perfil se construye en el Paso 13",
+                acciones = listOf("Cerrar sesión" to { sesion.cerrarSesion(); irALogin() }),
+                barraInferior = barraEstudiante
+            )
+        }
+
+        // ---------- Administrador ----------
         // TODO (Paso 11): reemplazar por PanelScreen
         composable(Rutas.PANEL) {
             PantallaProvisional(
-                titulo = "Hola, ${usuario?.nombre ?: ""}",
-                mensaje = "Panel del administrador (Paso 11)",
-                onCerrarSesion = { sesion.cerrarSesion(); irALogin() },
-                accionExtra = "Ver servicios" to { nav.navigate(Rutas.SERVICIOS) }
+                "Hola, ${usuario?.nombre ?: ""}", "Panel del administrador (Paso 11)",
+                acciones = listOf(
+                    "Ver servicios" to { nav.navigate(Rutas.SERVICIOS) },
+                    "Cerrar sesión" to { sesion.cerrarSesion(); irALogin() }
+                )
             )
         }
 
@@ -92,32 +175,33 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
             ServiciosScreen(vm = vm, onEditar = { /* TODO (Paso 13): nav.navigate(Rutas.formularioServicio(it)) */ })
         }
 
-        // TODO (Pasos 7 a 13): destinos del estudiante (Scaffold con NavigationBar de 4 ítems)
-        //  y del administrador (5 ítems), cada uno con su ViewModel creado por la factory.
+        // TODO (Pasos 11 a 13): destinos del administrador (NavigationBar de 5 ítems)
     }
 }
 
-/** Marcador temporal para las pantallas principales que se construyen en pasos siguientes. */
+/** Marcador temporal para las pantallas que se construyen en pasos siguientes. */
 @Composable
 private fun PantallaProvisional(
     titulo: String,
     mensaje: String,
-    onCerrarSesion: () -> Unit,
-    accionExtra: Pair<String, () -> Unit>? = null
+    acciones: List<Pair<String, () -> Unit>> = emptyList(),
+    barraInferior: @Composable () -> Unit = {}
 ) {
-    Column(
-        Modifier.fillMaxSize().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(titulo, style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
-        Text(mensaje, style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(24.dp))
-        if (accionExtra != null) {
-            LavaButton(accionExtra.first, onClick = accionExtra.second)
-            Spacer(Modifier.height(8.dp))
+    Scaffold(bottomBar = barraInferior, containerColor = MaterialTheme.colorScheme.background) { pad ->
+        Column(
+            Modifier.fillMaxSize().padding(pad).padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(titulo, style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
+            Text(mensaje, style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(24.dp))
+            acciones.forEachIndexed { i, (texto, accion) ->
+                if (i == 0) LavaButton(texto, onClick = accion)
+                else OutlinedButton(onClick = accion) { Text(texto) }
+                Spacer(Modifier.height(8.dp))
+            }
         }
-        OutlinedButton(onClick = onCerrarSesion) { Text("Cerrar sesión") }
     }
 }

@@ -18,6 +18,7 @@ class LavaViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T = when {
         modelClass.isAssignableFrom(ServiciosViewModel::class.java) -> ServiciosViewModel(repo)
         modelClass.isAssignableFrom(SesionViewModel::class.java) -> SesionViewModel(repo, prefs)
+        modelClass.isAssignableFrom(InicioViewModel::class.java) -> InicioViewModel(repo)
         else -> throw IllegalArgumentException("ViewModel desconocido: ${modelClass.name}")
     } as T
 }
