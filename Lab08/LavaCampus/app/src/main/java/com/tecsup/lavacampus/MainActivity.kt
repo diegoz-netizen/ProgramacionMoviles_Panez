@@ -2,12 +2,14 @@ package com.tecsup.lavacampus
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -30,6 +32,17 @@ class MainActivity : ComponentActivity() {
             val usuario by sesion.usuarioActual.collectAsStateWithLifecycle()
             val oscuro by sesion.modoOscuro.collectAsStateWithLifecycle()
             val rol = usuario?.let { Rol.valueOf(it.rol) } ?: Rol.CLIENTE
+
+            // Íconos de la barra de estado claros u oscuros según el modo de la app (no el del teléfono)
+            LaunchedEffect(oscuro) {
+                val transparente = android.graphics.Color.TRANSPARENT
+                enableEdgeToEdge(
+                    statusBarStyle = if (oscuro) SystemBarStyle.dark(transparente)
+                                     else SystemBarStyle.light(transparente, transparente),
+                    navigationBarStyle = if (oscuro) SystemBarStyle.dark(transparente)
+                                         else SystemBarStyle.light(transparente, transparente)
+                )
+            }
 
             LavaTheme(rol = rol, oscuro = oscuro) {
                 Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {

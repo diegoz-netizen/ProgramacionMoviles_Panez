@@ -31,12 +31,13 @@ fun StepperEstado(estado: EstadoPedido, modifier: Modifier = Modifier, vertical:
     val actual = EstadoPedido.etapas.indexOf(estado) // -1 si está CANCELADO
     val activo = MaterialTheme.colorScheme.primary
     val inactivo = MaterialTheme.colorScheme.outline
-    if (vertical) StepperVertical(actual, activo, inactivo, modifier)
-    else StepperHorizontal(actual, activo, inactivo, modifier)
+    val fondo = MaterialTheme.colorScheme.surface
+    if (vertical) StepperVertical(actual, activo, inactivo, fondo, modifier)
+    else StepperHorizontal(actual, activo, inactivo, fondo, modifier)
 }
 
 @Composable
-private fun StepperHorizontal(actual: Int, activo: Color, inactivo: Color, modifier: Modifier) {
+private fun StepperHorizontal(actual: Int, activo: Color, inactivo: Color, fondo: Color, modifier: Modifier) {
     val etapas = EstadoPedido.etapas
     Column(modifier.fillMaxWidth()) {
         Canvas(Modifier.fillMaxWidth().height(28.dp)) {
@@ -51,7 +52,7 @@ private fun StepperHorizontal(actual: Int, activo: Color, inactivo: Color, modif
                     cap = StrokeCap.Round
                 )
             }
-            etapas.indices.forEach { i -> dibujarPunto(Offset(paso * (i + 0.5f), y), i, actual, activo, inactivo) }
+            etapas.indices.forEach { i -> dibujarPunto(Offset(paso * (i + 0.5f), y), i, actual, activo, inactivo, fondo) }
         }
         Row(Modifier.fillMaxWidth()) {
             etapas.forEachIndexed { i, e ->
@@ -68,7 +69,7 @@ private fun StepperHorizontal(actual: Int, activo: Color, inactivo: Color, modif
 }
 
 @Composable
-private fun StepperVertical(actual: Int, activo: Color, inactivo: Color, modifier: Modifier) {
+private fun StepperVertical(actual: Int, activo: Color, inactivo: Color, fondo: Color, modifier: Modifier) {
     val etapas = EstadoPedido.etapas
     Column(modifier.fillMaxWidth()) {
         etapas.forEachIndexed { i, e ->
@@ -84,7 +85,7 @@ private fun StepperVertical(actual: Int, activo: Color, inactivo: Color, modifie
                             cap = StrokeCap.Round
                         )
                     }
-                    dibujarPunto(centro, i, actual, activo, inactivo)
+                    dibujarPunto(centro, i, actual, activo, inactivo, fondo)
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.padding(top = 4.dp)) {
@@ -106,17 +107,17 @@ private fun StepperVertical(actual: Int, activo: Color, inactivo: Color, modifie
 }
 
 /** Círculo de una etapa: lleno si ya pasó, con anillo si es la actual, hueco si está pendiente. */
-private fun DrawScope.dibujarPunto(centro: Offset, i: Int, actual: Int, activo: Color, inactivo: Color) {
+private fun DrawScope.dibujarPunto(centro: Offset, i: Int, actual: Int, activo: Color, inactivo: Color, fondo: Color) {
     val radio = 9.dp.toPx()
     when {
         i < actual -> drawCircle(activo, radio, centro)
         i == actual -> {
             drawCircle(activo.copy(alpha = 0.25f), radio * 1.45f, centro)
             drawCircle(activo, radio, centro)
-            drawCircle(Color.White, radio * 0.4f, centro)
+            drawCircle(fondo, radio * 0.4f, centro)
         }
         else -> {
-            drawCircle(Color.White, radio, centro)
+            drawCircle(fondo, radio, centro)
             drawCircle(inactivo, radio, centro, style = Stroke(width = 3.dp.toPx()))
         }
     }

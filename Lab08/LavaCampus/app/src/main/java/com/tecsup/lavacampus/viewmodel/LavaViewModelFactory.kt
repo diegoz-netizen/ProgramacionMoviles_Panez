@@ -19,12 +19,13 @@ class LavaViewModelFactory(
         modelClass.isAssignableFrom(ServiciosViewModel::class.java) -> ServiciosViewModel(repo)
         modelClass.isAssignableFrom(SesionViewModel::class.java) -> SesionViewModel(repo, prefs)
         modelClass.isAssignableFrom(InicioViewModel::class.java) -> InicioViewModel(repo)
-        modelClass.isAssignableFrom(NuevoPedidoViewModel::class.java) -> NuevoPedidoViewModel(repo)
+        modelClass.isAssignableFrom(NuevoPedidoViewModel::class.java) -> NuevoPedidoViewModel(repo, prefs)
         modelClass.isAssignableFrom(DetallePedidoViewModel::class.java) -> DetallePedidoViewModel(repo)
         modelClass.isAssignableFrom(MisPedidosViewModel::class.java) -> MisPedidosViewModel(repo)
         modelClass.isAssignableFrom(PanelViewModel::class.java) -> PanelViewModel(repo)
         modelClass.isAssignableFrom(BandejaViewModel::class.java) -> BandejaViewModel(repo)
         modelClass.isAssignableFrom(GestionPedidoViewModel::class.java) -> GestionPedidoViewModel(repo)
+        modelClass.isAssignableFrom(ClientesViewModel::class.java) -> ClientesViewModel(repo)
         else -> throw IllegalArgumentException("ViewModel desconocido: ${modelClass.name}")
     } as T
 }

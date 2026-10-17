@@ -26,7 +26,7 @@ object DatosIniciales {
     )
 
     val usuarios = listOf(
-        Usuario(nombre = "Ana Torres", codigo = "U202310234", correo = "ana@correo.test", clave = "1234", rol = Rol.CLIENTE.name),
+        Usuario(nombre = "Diego Panez", codigo = "U202310234", correo = "ana@correo.test", clave = "1234", rol = Rol.CLIENTE.name),
         Usuario(nombre = "Luis Quispe", codigo = "U202311578", correo = "luis@correo.test", clave = "1234", rol = Rol.CLIENTE.name),
         Usuario(nombre = "Marta Rojas", codigo = "U202312906", correo = "marta@correo.test", clave = "1234", rol = Rol.CLIENTE.name),
         Usuario(nombre = "Administrador", codigo = "", correo = "admin@lavacampus.test", clave = "admin", rol = Rol.ADMIN.name)
@@ -41,7 +41,7 @@ object DatosIniciales {
             val (lavado, planchado, seco) = Triple(s[0], s[1], s[2])
 
             db.usuarioDao().insertarTodos(usuarios)
-            val (ana, luis, marta) = usuarios.take(3).map { u ->
+            val (diego, luis, marta) = usuarios.take(3).map { u ->
                 requireNotNull(db.usuarioDao().login(u.correo, u.clave)).id
             }
 
@@ -83,17 +83,17 @@ object DatosIniciales {
             }
 
             // ENTREGADOS y pagados (ingresos de la semana; el de Marta de hace 10 días es de la semana pasada)
-            pedido(ana, lunes, EstadoPedido.ENTREGADO, listOf(lavado to 3.0, planchado to 4.0), pagado = true)
+            pedido(diego, lunes, EstadoPedido.ENTREGADO, listOf(lavado to 3.0, planchado to 4.0), pagado = true)
             pedido(luis, lunes, EstadoPedido.ENTREGADO, listOf(lavado to 5.0), pagado = true)
             pedido(marta, dia(3), EstadoPedido.ENTREGADO, listOf(seco to 3.0), pagado = true)
             pedido(marta, hoy.minusDays(10), EstadoPedido.ENTREGADO, listOf(lavado to 3.5), pagado = true)
 
             // LISTOS con casillero
-            pedido(ana, dia(1), EstadoPedido.LISTO, listOf(lavado to 2.5), casillero = "C-05")
+            pedido(diego, dia(1), EstadoPedido.LISTO, listOf(lavado to 2.5), casillero = "C-05")
             pedido(luis, dia(1), EstadoPedido.LISTO, listOf(planchado to 6.0, seco to 1.0), pagado = true, casillero = "C-07")
 
             // EN PROCESO
-            pedido(ana, hoy, EstadoPedido.EN_PROCESO, listOf(seco to 2.0), nota = "Saco azul, cuidado con los botones")
+            pedido(diego, hoy, EstadoPedido.EN_PROCESO, listOf(seco to 2.0), nota = "Saco azul, cuidado con los botones")
             pedido(marta, dia(1), EstadoPedido.EN_PROCESO, listOf(lavado to 2.0, planchado to 3.0))
 
             // RECIBIDOS de hoy

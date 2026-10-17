@@ -1,11 +1,5 @@
 package com.tecsup.lavacampus.ui.navigation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Dashboard
@@ -16,20 +10,12 @@ import androidx.compose.material.icons.filled.LocalLaundryService
 import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -39,21 +25,25 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.tecsup.lavacampus.model.Rol
+import com.tecsup.lavacampus.ui.administrador.AjustesScreen
 import com.tecsup.lavacampus.ui.administrador.BandejaScreen
+import com.tecsup.lavacampus.ui.administrador.ClientesScreen
+import com.tecsup.lavacampus.ui.administrador.FormularioServicioScreen
 import com.tecsup.lavacampus.ui.administrador.GestionPedidoScreen
 import com.tecsup.lavacampus.ui.administrador.PanelScreen
 import com.tecsup.lavacampus.ui.administrador.ServiciosScreen
 import com.tecsup.lavacampus.ui.components.BarraInferior
 import com.tecsup.lavacampus.ui.components.ItemBarra
-import com.tecsup.lavacampus.ui.components.LavaButton
 import com.tecsup.lavacampus.ui.estudiante.DetallePedidoScreen
 import com.tecsup.lavacampus.ui.estudiante.InicioScreen
 import com.tecsup.lavacampus.ui.estudiante.LoginScreen
 import com.tecsup.lavacampus.ui.estudiante.MisPedidosScreen
 import com.tecsup.lavacampus.ui.estudiante.NuevoPedidoScreen
+import com.tecsup.lavacampus.ui.estudiante.PerfilScreen
 import com.tecsup.lavacampus.ui.estudiante.SplashScreen
 import com.tecsup.lavacampus.ui.estudiante.TarifasScreen
 import com.tecsup.lavacampus.viewmodel.BandejaViewModel
+import com.tecsup.lavacampus.viewmodel.ClientesViewModel
 import com.tecsup.lavacampus.viewmodel.DetallePedidoViewModel
 import com.tecsup.lavacampus.viewmodel.GestionPedidoViewModel
 import com.tecsup.lavacampus.viewmodel.InicioViewModel
@@ -97,6 +87,16 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
 
     fun irALogin() {
         nav.navigate(Rutas.LOGIN) { popUpTo(0) { inclusive = true } }
+    }
+
+    fun cerrarSesion() {
+        sesion.cerrarSesion()
+        irALogin()
+    }
+
+    /** Cambia al otro perfil: entra a su pantalla principal, o al Login si ese perfil aún no tiene usuario. */
+    fun cambiarPerfil() {
+        sesion.cambiarPerfil { nuevo -> if (nuevo != null) irAPrincipal(Rol.valueOf(nuevo.rol)) else irALogin() }
     }
 
     /**
@@ -193,11 +193,15 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
             TarifasScreen(vm = vm, barraInferior = barraEstudiante)
         }
 
-        // TODO (Paso 13): reemplazar por PerfilScreen
         composable(Rutas.PERFIL) {
-            PantallaProvisional(
-                usuario?.nombre ?: "Perfil", "El perfil se construye en el Paso 13",
-                acciones = listOf("Cerrar sesión" to { sesion.cerrarSesion(); irALogin() }),
+            val u = usuario ?: return@composable
+            val vm: MisPedidosViewModel = viewModel(factory = factory)
+            PerfilScreen(
+                sesion = sesion,
+                pedidosVm = vm,
+                usuario = u,
+                onCambiarPerfil = ::cambiarPerfil,
+                onCerrarSesion = ::cerrarSesion,
                 barraInferior = barraEstudiante
             )
         }
@@ -235,50 +239,34 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
             val vm: ServiciosViewModel = viewModel(factory = factory)
             ServiciosScreen(
                 vm = vm,
-                onEditar = { /* TODO (Paso 13): nav.navigate(Rutas.formularioServicio(it)) */ },
+                onEditar = { nav.navigate(Rutas.formularioServicio(it)) },
                 barraInferior = barraAdministrador
             )
         }
 
-        // TODO (Paso 13): reemplazar por ClientesScreen
+        composable(
+            Rutas.FORMULARIO_SERVICIO,
+            arguments = listOf(navArgument("servicioId") { type = NavType.IntType })
+        ) { entrada ->
+            val id = entrada.arguments?.getInt("servicioId") ?: 0
+            val vm: ServiciosViewModel = viewModel(factory = factory)
+            FormularioServicioScreen(vm = vm, servicioId = id, onBack = { nav.popBackStack() })
+        }
+
         composable(Rutas.CLIENTES) {
-            PantallaProvisional("Clientes", "Se construye en el Paso 13", barraInferior = barraAdministrador)
+            val vm: ClientesViewModel = viewModel(factory = factory)
+            ClientesScreen(vm = vm, barraInferior = barraAdministrador)
         }
 
-        // TODO (Paso 13): reemplazar por AjustesScreen
         composable(Rutas.AJUSTES) {
-            PantallaProvisional(
-                usuario?.nombre ?: "Ajustes", "Los ajustes se construyen en el Paso 13",
-                acciones = listOf("Cerrar sesión" to { sesion.cerrarSesion(); irALogin() }),
+            val u = usuario ?: return@composable
+            AjustesScreen(
+                sesion = sesion,
+                usuario = u,
+                onCambiarPerfil = ::cambiarPerfil,
+                onCerrarSesion = ::cerrarSesion,
                 barraInferior = barraAdministrador
             )
-        }
-    }
-}
-
-/** Marcador temporal para las pantallas que se construyen en pasos siguientes. */
-@Composable
-private fun PantallaProvisional(
-    titulo: String,
-    mensaje: String,
-    acciones: List<Pair<String, () -> Unit>> = emptyList(),
-    barraInferior: @Composable () -> Unit = {}
-) {
-    Scaffold(bottomBar = barraInferior, containerColor = MaterialTheme.colorScheme.background) { pad ->
-        Column(
-            Modifier.fillMaxSize().padding(pad).padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(titulo, style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
-            Text(mensaje, style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(24.dp))
-            acciones.forEachIndexed { i, (texto, accion) ->
-                if (i == 0) LavaButton(texto, onClick = accion)
-                else OutlinedButton(onClick = accion) { Text(texto) }
-                Spacer(Modifier.height(8.dp))
-            }
         }
     }
 }

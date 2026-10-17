@@ -57,7 +57,8 @@ fun LoginScreen(vm: SesionViewModel, onIngresar: (Rol) -> Unit) {
     val error by vm.error.collectAsStateWithLifecycle()
     val oscuro by vm.modoOscuro.collectAsStateWithLifecycle()
 
-    var rol by rememberSaveable { mutableStateOf(Rol.CLIENTE) }
+    val rolSugerido by vm.rolSugerido.collectAsStateWithLifecycle()
+    var rol by rememberSaveable(rolSugerido) { mutableStateOf(rolSugerido) }
     var correo by rememberSaveable { mutableStateOf("") }
     var clave by rememberSaveable { mutableStateOf("") }
 

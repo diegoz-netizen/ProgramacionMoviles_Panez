@@ -30,6 +30,9 @@ class PreferenciasStore(private val context: Context) {
         val MODO_OSCURO = booleanPreferencesKey("modoOscuro")
         val NOTIFICACIONES = booleanPreferencesKey("notificaciones")
         val RECIBIR_PEDIDOS = booleanPreferencesKey("recibirPedidos")
+        // Último usuario de cada perfil, para "Cambiar de perfil" sin volver a iniciar sesión
+        val ULTIMO_CLIENTE_ID = intPreferencesKey("ultimoClienteId")
+        val ULTIMO_ADMIN_ID = intPreferencesKey("ultimoAdminId")
     }
 
     /** Si el archivo no se puede leer se usan los valores por defecto en lugar de cerrar la app. */
@@ -43,11 +46,17 @@ class PreferenciasStore(private val context: Context) {
     val notificaciones: Flow<Boolean> = datos.map { it[Claves.NOTIFICACIONES] ?: true }
     val recibirPedidos: Flow<Boolean> = datos.map { it[Claves.RECIBIR_PEDIDOS] ?: true }
 
+    /** Id del último usuario que entró con ese perfil (0 si nunca entró). */
+    fun ultimoUsuarioDe(rol: Rol): Flow<Int> = datos.map {
+        it[if (rol == Rol.ADMIN) Claves.ULTIMO_ADMIN_ID else Claves.ULTIMO_CLIENTE_ID] ?: 0
+    }
+
     // ---------- Escritura: funciones suspend ----------
     suspend fun guardarSesion(rol: Rol, usuarioId: Int) {
         context.dataStore.edit {
             it[Claves.PERFIL_ACTIVO] = rol.name
             it[Claves.USUARIO_ID] = usuarioId
+            it[if (rol == Rol.ADMIN) Claves.ULTIMO_ADMIN_ID else Claves.ULTIMO_CLIENTE_ID] = usuarioId
         }
     }
 
