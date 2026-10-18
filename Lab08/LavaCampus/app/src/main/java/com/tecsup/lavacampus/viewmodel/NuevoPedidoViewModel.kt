@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -72,10 +73,25 @@ class NuevoPedidoViewModel(
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    /** total = suma de cantidad x precio. */
-    val total: StateFlow<Double> = combine(servicios, _cantidades) { lista, cant ->
-        lista.sumOf { s -> (cant[s.id] ?: 0.0) * s.precio }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+    /** Suma de cantidad x precio, antes del descuento. */
+    val subtotal: StateFlow<Double> = lineas
+        .map { l -> l.sumOf { it.subtotal } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
+    /** Kilos de lavado elegidos (servicios cobrados por KG). */
+    val kilosLavado: StateFlow<Double> = lineas
+        .map { l -> l.filter { it.servicio.unidad == Unidad.KG.name }.sumOf { it.cantidad } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
+    /** Descuento por volumen: si el lavado supera 5 kg, 10% del subtotal del lavado. */
+    val descuento: StateFlow<Double> = lineas
+        .map { calcularDescuento(it) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
+    /** total = suma de cantidad x precio menos el descuento. */
+    val total: StateFlow<Double> = lineas
+        .map { l -> l.sumOf { it.subtotal } - calcularDescuento(l) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
     /** Hoy + el mayor tiempo de entrega de los servicios elegidos (24 h = 1 día); el domingo pasa al lunes. */
     val fechaEntrega: StateFlow<LocalDate?> = combine(servicios, _cantidades) { lista, cant ->
@@ -127,7 +143,8 @@ class NuevoPedidoViewModel(
                 usuarioId = usuarioId,
                 lineas = elegidas.map { LineaPedido(it.servicio.id, it.cantidad) },
                 fechaEntrega = entrega.toString(),
-                nota = _nota.value.trim()
+                nota = _nota.value.trim(),
+                descuento = calcularDescuento(elegidas)
             )
             _guardando.value = false
             _pedidoCreado.value = id
@@ -136,6 +153,16 @@ class NuevoPedidoViewModel(
 
     companion object {
         const val MAX_ACTIVOS = 3
+        const val KG_PARA_DESCUENTO = 5.0
+        const val PORCENTAJE_DESCUENTO = 0.10
+
+        /** Regla: si el lavado (servicios por KG) supera 5 kg, 10% de descuento sobre su subtotal. */
+        fun calcularDescuento(lineas: List<LineaResumen>): Double {
+            val lavado = lineas.filter { it.servicio.unidad == Unidad.KG.name }
+            val kilos = lavado.sumOf { it.cantidad }
+            if (kilos <= KG_PARA_DESCUENTO) return 0.0
+            return Math.round(lavado.sumOf { it.subtotal } * PORCENTAJE_DESCUENTO * 100) / 100.0
+        }
 
         fun calcularEntrega(desde: LocalDate, horas: Int): LocalDate {
             var f = desde.plusDays((horas / 24).toLong())

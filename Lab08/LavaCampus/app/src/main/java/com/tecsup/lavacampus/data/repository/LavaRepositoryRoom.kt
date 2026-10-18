@@ -55,12 +55,14 @@ class LavaRepositoryRoom(private val db: LavaDatabase) : LavaRepository {
      * Guarda el pedido y todas sus líneas en UNA transacción: si falla el insert de un detalle,
      * se deshace también el del pedido y no queda un pedido sin detalles.
      * Copia el precio actual de cada servicio (precio congelado) y calcula subtotales y total.
+     * El [descuento] lo decide el ViewModel (regla de negocio) y aquí solo se resta y se guarda.
      */
     override suspend fun crearPedido(
         usuarioId: Int,
         lineas: List<LineaPedido>,
         fechaEntrega: String,
-        nota: String
+        nota: String,
+        descuento: Double
     ): Long = db.withTransaction {
         val detalles = lineas.map { linea ->
             val servicio = requireNotNull(servicioDao.obtener(linea.servicioId)) {
@@ -80,7 +82,8 @@ class LavaRepositoryRoom(private val db: LavaDatabase) : LavaRepository {
                 fechaRegistro = LocalDate.now().toString(),
                 fechaEntrega = fechaEntrega,
                 estado = EstadoPedido.RECIBIDO.name,
-                total = detalles.sumOf { it.subtotal },
+                total = detalles.sumOf { it.subtotal } - descuento,
+                descuento = descuento,
                 pagado = false,
                 nota = nota
             )

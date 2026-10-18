@@ -26,7 +26,8 @@ data class Pedido(
     val fechaRegistro: String, // 'aaaa-MM-dd'
     val fechaEntrega: String,  // 'aaaa-MM-dd'
     val estado: String,        // EstadoPedido.name
-    val total: Double,
+    val total: Double,          // ya con el descuento aplicado
+    val descuento: Double = 0.0, // descuento por volumen (10% del lavado si supera 5 kg)
     val casillero: String? = null, // nulo hasta estar LISTO
     val pagado: Boolean = false,
     val nota: String = "",

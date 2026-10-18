@@ -124,6 +124,14 @@ fun DetallePedidoScreen(vm: DetallePedidoViewModel, pedidoId: Int, onBack: () ->
                     }
                 }
                 HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outline)
+                if (p.descuento > 0) {
+                    Row(Modifier.fillMaxWidth().padding(bottom = 4.dp)) {
+                        Text("Descuento por volumen", style = MaterialTheme.typography.bodyMedium,
+                            color = EstadoPedido.LISTO.color, modifier = Modifier.weight(1f))
+                        Text("- ${soles(p.descuento)}", style = MaterialTheme.typography.bodyMedium,
+                            color = EstadoPedido.LISTO.color)
+                    }
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Total", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                     Text(soles(p.total), style = MaterialTheme.typography.headlineSmall,

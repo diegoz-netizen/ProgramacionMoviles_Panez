@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tecsup.lavacampus.data.local.entity.Servicio
 import com.tecsup.lavacampus.data.local.entity.Usuario
+import com.tecsup.lavacampus.model.EstadoPedido
 import com.tecsup.lavacampus.model.Unidad
 import com.tecsup.lavacampus.ui.components.AppTopBar
 import com.tecsup.lavacampus.ui.components.IconoServicio
@@ -64,6 +66,9 @@ fun NuevoPedidoScreen(
     val nota by vm.nota.collectAsStateWithLifecycle()
     val lineas by vm.lineas.collectAsStateWithLifecycle()
     val total by vm.total.collectAsStateWithLifecycle()
+    val subtotal by vm.subtotal.collectAsStateWithLifecycle()
+    val descuento by vm.descuento.collectAsStateWithLifecycle()
+    val kilosLavado by vm.kilosLavado.collectAsStateWithLifecycle()
     val fechaEntrega by vm.fechaEntrega.collectAsStateWithLifecycle()
     val mensaje by vm.mensaje.collectAsStateWithLifecycle()
     val guardando by vm.guardando.collectAsStateWithLifecycle()
@@ -129,7 +134,7 @@ fun NuevoPedidoScreen(
                     unaLinea = false
                 )
             }
-            item { Resumen(lineas, total, fechaEntrega) }
+            item { Resumen(lineas, subtotal, descuento, kilosLavado, total, fechaEntrega) }
         }
     }
 }
@@ -179,7 +184,14 @@ private fun TarjetaServicio(servicio: Servicio, cantidad: Double, onCambio: (Dou
 }
 
 @Composable
-private fun Resumen(lineas: List<LineaResumen>, total: Double, fechaEntrega: LocalDate?) {
+private fun Resumen(
+    lineas: List<LineaResumen>,
+    subtotal: Double,
+    descuento: Double,
+    kilosLavado: Double,
+    total: Double,
+    fechaEntrega: LocalDate?
+) {
     Card(
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -201,6 +213,25 @@ private fun Resumen(lineas: List<LineaResumen>, total: Double, fechaEntrega: Loc
                 }
             }
             HorizontalDivider(Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outline)
+            if (descuento > 0) {
+                Row(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                    Text("Subtotal", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                    Text(soles(subtotal), style = MaterialTheme.typography.bodyMedium)
+                }
+                Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.Sell, contentDescription = null, tint = EstadoPedido.LISTO.color,
+                        modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Descuento por volumen (10% del lavado)", style = MaterialTheme.typography.bodyMedium,
+                        color = EstadoPedido.LISTO.color, modifier = Modifier.weight(1f))
+                    Text("- ${soles(descuento)}", style = MaterialTheme.typography.bodyMedium,
+                        color = EstadoPedido.LISTO.color)
+                }
+            } else if (kilosLavado > 0) {
+                Text("Con más de ${NuevoPedidoViewModel.KG_PARA_DESCUENTO.toInt()} kg de lavado tienes 10% de descuento",
+                    style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 6.dp))
+            }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text("Total", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 Text(soles(total), style = MaterialTheme.typography.headlineSmall,

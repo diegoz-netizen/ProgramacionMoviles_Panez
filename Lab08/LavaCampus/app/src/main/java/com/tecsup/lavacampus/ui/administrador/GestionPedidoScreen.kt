@@ -145,6 +145,14 @@ fun GestionPedidoScreen(vm: GestionPedidoViewModel, pedidoId: Int, onBack: () ->
                         Text(soles(l.detalle.subtotal), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
+                if (p.descuento > 0) {
+                    Row(Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
+                        Text("Descuento por volumen", style = MaterialTheme.typography.bodyMedium,
+                            color = EstadoPedido.LISTO.color, modifier = Modifier.weight(1f))
+                        Text("- ${soles(p.descuento)}", style = MaterialTheme.typography.bodyMedium,
+                            color = EstadoPedido.LISTO.color)
+                    }
+                }
                 HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outline)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {

@@ -34,7 +34,7 @@ interface LavaRepository {
 
     // Pedidos
     suspend fun crearPedido(usuarioId: Int, lineas: List<LineaPedido>,
-                            fechaEntrega: String, nota: String): Long
+                            fechaEntrega: String, nota: String, descuento: Double = 0.0): Long
     suspend fun contarActivos(usuarioId: Int): Int
     fun observarPedidosDeUsuario(usuarioId: Int): Flow<List<PedidoConDetalle>>
     fun observarPedidos(): Flow<List<PedidoConDetalle>>
