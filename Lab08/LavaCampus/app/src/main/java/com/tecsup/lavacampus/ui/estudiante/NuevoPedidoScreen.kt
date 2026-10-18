@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -57,9 +58,12 @@ fun NuevoPedidoScreen(
     vm: NuevoPedidoViewModel,
     usuario: Usuario,
     onBack: () -> Unit,
-    onConfirmado: () -> Unit
+    onConfirmado: () -> Unit,
+    repetirId: Int = 0
 ) {
     LaunchedEffect(usuario.id) { vm.cargar(usuario.id) }
+    LaunchedEffect(repetirId) { vm.repetir(repetirId) }
+    val aviso by vm.aviso.collectAsStateWithLifecycle()
 
     val servicios by vm.servicios.collectAsStateWithLifecycle()
     val cantidades by vm.cantidades.collectAsStateWithLifecycle()
@@ -105,6 +109,19 @@ fun NuevoPedidoScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            if (aviso != null) {
+                item {
+                    Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier.fillMaxWidth()) {
+                        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.Replay, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Spacer(Modifier.width(10.dp))
+                            Text(aviso!!, style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        }
+                    }
+                }
+            }
             if (!recibe) {
                 item {
                     Surface(color = MaterialTheme.colorScheme.error.copy(alpha = 0.10f),

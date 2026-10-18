@@ -16,8 +16,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
@@ -53,6 +55,7 @@ fun MisPedidosScreen(
     usuario: Usuario,
     onPedido: (Int) -> Unit,
     onNuevoPedido: () -> Unit,
+    onRepetir: (Int) -> Unit,
     barraInferior: @Composable () -> Unit
 ) {
     LaunchedEffect(usuario.id) { vm.cargar(usuario.id) }
@@ -104,7 +107,17 @@ fun MisPedidosScreen(
                             estado = EstadoPedido.valueOf(p.pedido.estado),
                             casillero = p.pedido.casillero,
                             onClick = { onPedido(p.pedido.id) },
-                            accion = if (vm.puedeCancelar(p)) {
+                            accion = if (pestana == 1) {
+                                // Historial: "Pedir de nuevo" carga las mismas líneas con los precios actuales
+                                {
+                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                        FilledTonalButton(onClick = { onRepetir(p.pedido.id) }) {
+                                            Icon(Icons.Filled.Replay, contentDescription = null)
+                                            Text("  Pedir de nuevo")
+                                        }
+                                    }
+                                }
+                            } else if (vm.puedeCancelar(p)) {
                                 {
                                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                                         TextButton(onClick = { aCancelar = p }) {

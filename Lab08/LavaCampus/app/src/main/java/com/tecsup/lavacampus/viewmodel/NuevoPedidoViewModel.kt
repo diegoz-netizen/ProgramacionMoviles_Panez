@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -117,6 +118,43 @@ class NuevoPedidoViewModel(
             if (nueva == 0.0) actual - servicioId else actual + (servicioId to nueva)
         }
         _mensaje.value = null
+    }
+
+    // ---------- Repetir un pedido ----------
+    private val _aviso = MutableStateFlow<String?>(null)
+    /** Aviso informativo (por ejemplo, que se cargó un pedido anterior). */
+    val aviso: StateFlow<String?> = _aviso.asStateFlow()
+
+    private var repeticionCargada = false
+
+    /**
+     * "Pedir de nuevo": carga las mismas líneas de un pedido anterior.
+     * Solo se copian las cantidades; el total sale de los servicios actuales, así que usa los precios de hoy.
+     * Un servicio que ya no está activo se omite y se avisa.
+     */
+    fun repetir(pedidoId: Int) {
+        if (pedidoId == 0 || repeticionCargada) return
+        repeticionCargada = true
+        viewModelScope.launch {
+            val anterior = repo.observarPedido(pedidoId).first() ?: return@launch
+            val activos = repo.observarServiciosActivos().first().associateBy { it.id }
+            val cantidades = mutableMapOf<Int, Double>()
+            val omitidos = mutableListOf<String>()
+            anterior.detalles.forEach { linea ->
+                val servicio = activos[linea.servicio.id]
+                if (servicio == null) {
+                    omitidos += linea.servicio.nombre
+                } else {
+                    val regla = servicio.reglaCantidad()
+                    cantidades[servicio.id] = linea.detalle.cantidad.coerceIn(regla.minimo, regla.maximo)
+                }
+            }
+            _cantidades.value = cantidades
+            _aviso.value = buildString {
+                append("Cargamos tu pedido #$pedidoId con los precios actuales")
+                if (omitidos.isNotEmpty()) append(". Ya no disponible: ${omitidos.joinToString()}")
+            }
+        }
     }
 
     fun cambiarNota(texto: String) {

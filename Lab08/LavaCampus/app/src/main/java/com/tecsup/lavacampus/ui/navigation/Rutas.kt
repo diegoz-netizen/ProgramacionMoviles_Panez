@@ -7,7 +7,8 @@ object Rutas {
 
     // Estudiante
     const val INICIO = "inicio"
-    const val NUEVO_PEDIDO = "nuevo_pedido"
+    /** repetir = id de un pedido anterior para "Pedir de nuevo" (0 = pedido nuevo vacío). */
+    const val NUEVO_PEDIDO = "nuevo_pedido?repetir={repetir}"
     const val MIS_PEDIDOS = "mis_pedidos"
     const val DETALLE_PEDIDO = "detalle_pedido/{pedidoId}"
     const val TARIFAS = "tarifas"
@@ -22,6 +23,7 @@ object Rutas {
     const val CLIENTES = "clientes"
     const val AJUSTES = "ajustes"
 
+    fun nuevoPedido(repetir: Int = 0) = "nuevo_pedido?repetir=$repetir"
     fun detallePedido(id: Int) = "detalle_pedido/$id"
     fun gestionPedido(id: Int) = "gestion_pedido/$id"
     /** id = 0 para crear un servicio nuevo. */
