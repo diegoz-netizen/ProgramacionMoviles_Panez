@@ -13,7 +13,7 @@ Cuando el administrador marca un pedido como **Listo**, el estudiante lo ve con 
 |---|---|
 | Curso | Programación en Móviles · TECSUP · 4to ciclo |
 | Alumno | Diego Panez |
-| Rama | `sin-ia` (Fase 1, sin IA) |
+| Ramas | `sin-ia` (Fase 1, sin IA) · `con-ia` (Fase 2, mejoras con IA; prompts en [PROMPTS.md](PROMPTS.md)) |
 | Tecnología | Kotlin 2.2 · Compose BOM 2026.02 · Material 3 · Room 2.7 + KSP · DataStore · Navigation Compose |
 | minSdk | 26 (para usar `java.time` sin librerías extra) |
 
@@ -26,7 +26,7 @@ Cuando el administrador marca un pedido como **Listo**, el estudiante lo ve con 
 | Estudiante (Marta Rojas) | `marta@correo.test` | `1234` |
 | Administrador | `admin@lavacampus.test` | `admin` |
 
-Los datos iniciales (4 servicios, 4 usuarios y 11 pedidos en distintos estados) se cargan solo la primera vez que se abre la app. Si se cambia una entidad, hay que desinstalar la app (o subir la `version` de la base) para que Room no falle por esquema distinto.
+Los datos iniciales (4 servicios, 4 usuarios y 12 pedidos en distintos estados, uno de ellos atrasado) se cargan solo la primera vez que se abre la app. Si se cambia una entidad, hay que desinstalar la app (o subir la `version` de la base) para que Room no falle por esquema distinto.
 
 ## Capturas
 
@@ -62,6 +62,29 @@ Las 16 vistas de la app (15 pantallas; el login se muestra con cada perfil).
 |:---:|:---:|:---:|
 | ![Formulario de servicio](capturas/14-admin-formulario-servicio.png) | ![Clientes](capturas/15-admin-clientes.png) | ![Ajustes](capturas/16-admin-ajustes.png) |
 | Crear o editar un servicio | Pedidos y total gastado por estudiante | Cambio de perfil, modo oscuro, notificaciones y recibir pedidos |
+
+### Mejoras de la Fase 2 (rama `con-ia`)
+
+Pedidos atrasados:
+
+| Panel | Bandeja |
+|:---:|:---:|
+| ![Panel con pedidos atrasados](capturas/17-ia-panel-atrasados.png) | ![Bandeja con pedido atrasado](capturas/18-ia-bandeja-atrasado.png) |
+| Alerta roja con la cantidad de pedidos atrasados y el botón Ver | El pedido #12 de Marta, con entrega vencida y aún en proceso, aparece con borde rojo |
+
+Descuento por volumen:
+
+| Nuevo pedido | Detalle del pedido |
+|:---:|:---:|
+| ![Nuevo pedido con descuento](capturas/19-ia-nuevo-pedido-descuento.png) | ![Detalle con descuento](capturas/20-ia-detalle-descuento.png) |
+| 6 kg de lavado y 2 prendas: subtotal S/ 53.00, descuento S/ 4.80, total S/ 48.20 | El descuento queda guardado en el pedido y se muestra en su detalle |
+
+Repetir un pedido:
+
+| Historial | Pedido repetido |
+|:---:|:---:|
+| ![Historial con Pedir de nuevo](capturas/21-ia-historial-pedir-de-nuevo.png) | ![Pedido repetido](capturas/22-ia-pedido-repetido.png) |
+| Cada pedido del historial tiene el botón Pedir de nuevo | Nuevo pedido se abre con las mismas cantidades del pedido #1 y los precios de hoy |
 
 ## Arquitectura MVVM + Repository
 
@@ -180,6 +203,7 @@ erDiagram
         string fechaEntrega
         string estado
         double total
+        double descuento
         string casillero
         bool pagado
         string nota
@@ -227,6 +251,7 @@ CREATE TABLE pedidos (
   fechaRegistro TEXT NOT NULL, fechaEntrega TEXT NOT NULL,   -- 'aaaa-MM-dd'
   estado TEXT NOT NULL,                               -- RECIBIDO | EN_PROCESO | LISTO | ENTREGADO | CANCELADO
   total REAL NOT NULL, casillero TEXT,                -- casillero nulo hasta estar LISTO
+  descuento REAL NOT NULL DEFAULT 0.0,                -- Fase 2 (versión 2 de la base)
   pagado INTEGER NOT NULL, nota TEXT NOT NULL, fechaCreacion INTEGER NOT NULL,
   FOREIGN KEY (usuarioId) REFERENCES usuarios(id) ON DELETE CASCADE
 );
@@ -243,6 +268,8 @@ CREATE TABLE detalles_pedido (
 CREATE INDEX index_detalles_pedido_pedidoId ON detalles_pedido (pedidoId);
 CREATE INDEX index_detalles_pedido_servicioId ON detalles_pedido (servicioId);
 ```
+
+En la Fase 2 la columna `descuento` llegó con la versión 2 de la base. La migración `MIGRACION_1_2` ejecuta `ALTER TABLE pedidos ADD COLUMN descuento REAL NOT NULL DEFAULT 0.0`, así que los pedidos existentes se conservan con descuento 0.
 
 Traducción a Room:
 
@@ -262,7 +289,7 @@ Las reglas que SQLite no puede expresar con `CHECK` en Room (casillero libre, m�
 | El estudiante solo ve sus pedidos; el administrador ve todos | `InicioViewModel`, `MisPedidosViewModel` / `BandejaViewModel` |
 | Cantidades: KG de 1.0 a 10.0 en pasos de 0.5; PRENDA y UNIDAD de 1 a 30; solo servicios activos | `NuevoPedidoViewModel` |
 | Máximo 3 pedidos activos | `NuevoPedidoViewModel.confirmar()` |
-| Total = Σ cantidad × precio, guardado para siempre; estado inicial RECIBIDO y sin pagar | `LavaRepositoryRoom.crearPedido()` |
+| Total = Σ cantidad × precio − descuento, guardado para siempre; estado inicial RECIBIDO y sin pagar | `LavaRepositoryRoom.crearPedido()` |
 | Fecha de entrega = hoy + mayor tiempo de los servicios; si cae domingo pasa al lunes | `NuevoPedidoViewModel.calcularEntrega()` |
 | Pedido y líneas en una sola transacción | `db.withTransaction { }` |
 | Estudiante cancela solo en RECIBIDO; administrador en RECIBIDO o EN_PROCESO | `DetallePedidoViewModel`, `MisPedidosViewModel`, `GestionPedidoViewModel` |
@@ -271,6 +298,9 @@ Las reglas que SQLite no puede expresar con `CHECK` en Room (casillero libre, m�
 | Servicio usado no se elimina, solo se desactiva | `ServiciosViewModel.eliminar()` |
 | "Recibir pedidos" apagado bloquea nuevos pedidos | `NuevoPedidoViewModel` + `PreferenciasStore` |
 | Perfil activo y modo oscuro persisten al cerrar la app | `PreferenciasStore` + `SesionViewModel` |
+| Fase 2: un pedido está atrasado si su fecha de entrega ya pasó y no está entregado ni cancelado | `PedidoDao.observarIdsAtrasados()` + `BandejaViewModel` / `PanelViewModel` |
+| Fase 2: si el lavado (servicios por kg) supera 5 kg, 10% de descuento sobre su subtotal | `NuevoPedidoViewModel.calcularDescuento()` |
+| Fase 2: Pedir de nuevo copia las cantidades con los precios actuales y omite los servicios desactivados | `NuevoPedidoViewModel.repetir()` |
 
 ## Pruebas de aceptación
 
@@ -292,6 +322,18 @@ Todas se ejecutaron en el emulador (Pixel 8) antes de cerrar la Fase 1.
 | Cerrar y abrir la app | Los pedidos siguen ahí y el perfil y el modo oscuro se recuerdan | Cumple |
 
 \* Como ambos perfiles están en el mismo dispositivo, se comprobó cambiando de perfil: el administrador pasó el pedido #13 a Listo con el casillero C-10 y, al volver al estudiante, su Inicio y su Detalle ya mostraban "Recógelo en el casillero C-10" sin reiniciar la app. Las pantallas leen el pedido con `Flow` de Room, que vuelve a emitir cada vez que la tabla cambia.
+
+Pruebas de las mejoras de la Fase 2:
+
+| Prueba | Resultado esperado | Estado |
+|---|---|---|
+| Administrador: abrir el Panel con un pedido vencido | Alerta "Hay 1 pedido atrasado" | Cumple |
+| Administrador: ver la Bandeja | El pedido #12 aparece en rojo; los entregados y cancelados no | Cumple |
+| Estudiante: 5 kg de lavado | Sin descuento, con la pista de los 5 kg | Cumple |
+| Estudiante: 6 kg de lavado | Descuento de S/ 4.80 en el resumen, guardado en el pedido | Cumple |
+| Actualizar la app sobre la base v1 | La migración agrega la columna y conserva los pedidos | Cumple |
+| Estudiante: Pedir de nuevo con el precio del lavado cambiado | Se usan los precios actuales | Cumple |
+| Estudiante: Pedir de nuevo con Planchado desactivado | Se omite y se avisa "Ya no disponible: Planchado" | Cumple |
 
 ## Para pensar
 
