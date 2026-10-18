@@ -1,5 +1,6 @@
 package com.tecsup.lavacampus.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -42,15 +44,29 @@ fun PedidoCard(
     modifier: Modifier = Modifier,
     casillero: String? = null,
     titulo: String? = null,
+    atrasado: Boolean = false,
     accion: (@Composable () -> Unit)? = null
 ) {
     Card(
         modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        // Pedido atrasado: borde rojo para que destaque en la bandeja
+        border = if (atrasado) BorderStroke(2.dp, MaterialTheme.colorScheme.error) else null
     ) {
         Column(Modifier.padding(16.dp)) {
+            if (atrasado) {
+                Surface(color = MaterialTheme.colorScheme.error.copy(alpha = 0.12f), shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.padding(bottom = 8.dp)) {
+                    Row(Modifier.padding(horizontal = 10.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Filled.Warning, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("Atrasado: ya pasó su fecha de entrega", color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelMedium)
+                    }
+                }
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(titulo ?: "Pedido #$numero", style = MaterialTheme.typography.titleMedium)

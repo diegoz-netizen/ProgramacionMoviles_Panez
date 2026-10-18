@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.LocalLaundryService
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Today
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -52,6 +53,7 @@ fun PanelScreen(
     val pedidosHoy by vm.pedidosHoy.collectAsStateWithLifecycle()
     val enProceso by vm.enProceso.collectAsStateWithLifecycle()
     val porRecoger by vm.porRecoger.collectAsStateWithLifecycle()
+    val atrasados by vm.atrasados.collectAsStateWithLifecycle()
     val ingresos by vm.ingresosSemana.collectAsStateWithLifecycle()
     val porEstado by vm.porEstado.collectAsStateWithLifecycle()
     val porServicio by vm.porServicio.collectAsStateWithLifecycle()
@@ -71,9 +73,29 @@ fun PanelScreen(
                 }
             }
 
+            // Alerta: pedidos atrasados (fecha de entrega vencida)
+            if (atrasados > 0) {
+                item {
+                    Alerta(
+                        texto = if (atrasados == 1) "Hay 1 pedido atrasado" else "Hay $atrasados pedidos atrasados",
+                        icono = Icons.Filled.Warning,
+                        color = MaterialTheme.colorScheme.error,
+                        onVer = onVerPorRecoger
+                    )
+                }
+            }
+
             // Alerta: pedidos listos esperando recojo
             if (porRecoger > 0) {
-                item { AlertaPorRecoger(porRecoger, onVerPorRecoger) }
+                item {
+                    Alerta(
+                        texto = if (porRecoger == 1) "Hay 1 pedido listo esperando recojo"
+                                else "Hay $porRecoger pedidos listos esperando recojo",
+                        icono = Icons.Filled.NotificationsActive,
+                        color = EstadoPedido.LISTO.color,
+                        onVer = onVerPorRecoger
+                    )
+                }
             }
 
             // 3 contadores de color
@@ -141,28 +163,22 @@ private fun Contador(titulo: String, valor: Int, icono: ImageVector, color: Colo
     }
 }
 
+/** Tarjeta de alerta con botón "Ver" (pedidos atrasados o listos por recoger). */
 @Composable
-private fun AlertaPorRecoger(cantidad: Int, onVer: () -> Unit) {
-    val verde = EstadoPedido.LISTO.color
+private fun Alerta(texto: String, icono: ImageVector, color: Color, onVer: () -> Unit) {
     Card(
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = verde.copy(alpha = 0.12f)),
+        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.12f)),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Filled.NotificationsActive, contentDescription = null, tint = verde)
+            Icon(icono, contentDescription = null, tint = color)
             Spacer(Modifier.width(10.dp))
-            Text(
-                if (cantidad == 1) "Hay 1 pedido listo esperando recojo"
-                else "Hay $cantidad pedidos listos esperando recojo",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
-            )
-            Button(
-                onClick = onVer,
-                colors = ButtonDefaults.buttonColors(containerColor = verde, contentColor = Color.White)
-            ) { Text("Ver") }
+            Text(texto, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f))
+            Button(onClick = onVer, colors = ButtonDefaults.buttonColors(containerColor = color, contentColor = Color.White)) {
+                Text("Ver")
+            }
         }
     }
 }

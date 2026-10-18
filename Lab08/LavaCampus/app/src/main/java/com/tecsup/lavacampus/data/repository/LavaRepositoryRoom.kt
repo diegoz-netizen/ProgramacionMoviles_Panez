@@ -115,4 +115,7 @@ class LavaRepositoryRoom(private val db: LavaDatabase) : LavaRepository {
 
     override fun observarIngresosPorServicio(fechaInicio: String): Flow<List<IngresoServicio>> =
         detalleDao.observarIngresosPorServicio(fechaInicio)
+
+    // ---------- Pedidos atrasados ----------
+    override fun observarIdsAtrasados(hoy: String): Flow<List<Int>> = pedidoDao.observarIdsAtrasados(hoy)
 }

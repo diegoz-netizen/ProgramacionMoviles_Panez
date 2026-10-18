@@ -42,6 +42,7 @@ fun BandejaScreen(
     val filtro by vm.filtro.collectAsStateWithLifecycle()
     val busqueda by vm.busqueda.collectAsStateWithLifecycle()
     val mensaje by vm.mensaje.collectAsStateWithLifecycle()
+    val atrasados by vm.atrasados.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = { AppTopBar("Pedidos") },
@@ -93,6 +94,7 @@ fun BandejaScreen(
                         estado = estado,
                         casillero = p.pedido.casillero,
                         onClick = { onAbrir(p.pedido.id) },
+                        atrasado = p.pedido.id in atrasados,
                         accion = accionPara(p, estado, vm, onAbrir)
                     )
                 }

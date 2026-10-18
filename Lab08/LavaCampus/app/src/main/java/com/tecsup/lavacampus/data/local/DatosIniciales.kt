@@ -102,6 +102,10 @@ object DatosIniciales {
 
             // Un CANCELADO para el historial
             pedido(luis, dia(2), EstadoPedido.CANCELADO, listOf(lavado to 1.0))
+
+            // Un pedido ATRASADO: su fecha de entrega ya pasó y sigue en proceso (mejora de la Fase 2)
+            pedido(marta, hoy.minusDays(5), EstadoPedido.EN_PROCESO, listOf(lavado to 3.0),
+                nota = "Ropa deportiva")
         }
     }
 }
