@@ -7,5 +7,6 @@ data class ClienteResumen(
     val codigo: String,
     val correo: String,
     val cantidadPedidos: Int,
-    val totalGastado: Double
+    val totalGastado: Double,
+    val foto: String? = null
 )

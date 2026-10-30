@@ -15,6 +15,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.tecsup.lavacampus.ui.components.DialogoEditarDatos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,6 +42,8 @@ fun AjustesScreen(
     val oscuro by sesion.modoOscuro.collectAsStateWithLifecycle()
     val notificaciones by sesion.notificaciones.collectAsStateWithLifecycle()
     val recibir by sesion.recibirPedidos.collectAsStateWithLifecycle()
+    val avisoFoto by sesion.avisoFoto.collectAsStateWithLifecycle()
+    var editando by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = { AppTopBar("Ajustes") },
@@ -48,7 +54,12 @@ fun AjustesScreen(
             Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            TarjetaUsuario(usuario)
+            TarjetaUsuario(usuario, onCambiarFoto = sesion::cambiarFoto,
+                onQuitarFoto = sesion::quitarFoto, aviso = avisoFoto,
+                onEditarDatos = { editando = true })
+            if (editando) {
+                DialogoEditarDatos(sesion = sesion, usuario = usuario, onCerrar = { editando = false })
+            }
             LavaButton("Cambiar de perfil", onClick = onCambiarPerfil, icono = Icons.Filled.SwapHoriz)
 
             TarjetaSeccion {

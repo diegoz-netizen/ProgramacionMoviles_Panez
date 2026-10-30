@@ -27,6 +27,7 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,7 +53,7 @@ import com.tecsup.lavacampus.viewmodel.SesionViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(vm: SesionViewModel, onIngresar: (Rol) -> Unit) {
+fun LoginScreen(vm: SesionViewModel, onIngresar: (Rol) -> Unit, onRegistrarse: () -> Unit) {
     val usuario by vm.usuarioActual.collectAsStateWithLifecycle()
     val error by vm.error.collectAsStateWithLifecycle()
     val oscuro by vm.modoOscuro.collectAsStateWithLifecycle()
@@ -137,6 +138,13 @@ fun LoginScreen(vm: SesionViewModel, onIngresar: (Rol) -> Unit) {
                     )
                     Spacer(Modifier.height(12.dp))
                     LavaButton("Ingresar", onClick = { vm.login(correo, clave, rol) })
+                    // Solo los estudiantes crean su cuenta; el administrador ya viene creado
+                    if (rol == Rol.CLIENTE) {
+                        TextButton(
+                            onClick = { vm.limpiarError(); onRegistrarse() },
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        ) { Text("¿No tienes cuenta? Regístrate") }
+                    }
                 }
             }
             Spacer(Modifier.height(24.dp))

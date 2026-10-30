@@ -14,5 +14,8 @@ data class Usuario(
     val codigo: String, // código de estudiante (ej. U202310234); vacío para el administrador
     val correo: String,
     val clave: String,
-    val rol: String // Rol.name: CLIENTE | ADMIN
+    val rol: String, // Rol.name: CLIENTE | ADMIN
+    // Foto de perfil: ruta de un archivo elegido de la galería, o "avatar:<nombre>" para un avatar incluido en la app.
+    // null = se muestran las iniciales.
+    val foto: String? = null
 )

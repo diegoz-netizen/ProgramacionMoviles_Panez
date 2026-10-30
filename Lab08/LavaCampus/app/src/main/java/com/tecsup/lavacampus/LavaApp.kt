@@ -2,6 +2,7 @@ package com.tecsup.lavacampus
 
 import android.app.Application
 import com.tecsup.lavacampus.data.local.DatosIniciales
+import com.tecsup.lavacampus.data.local.FotosPerfil
 import com.tecsup.lavacampus.data.local.LavaDatabase
 import com.tecsup.lavacampus.data.prefs.PreferenciasStore
 import com.tecsup.lavacampus.data.repository.LavaRepository
@@ -26,7 +27,7 @@ class LavaApp : Application() {
     override fun onCreate() {
         super.onCreate()
         db = LavaDatabase.obtener(this)
-        repository = LavaRepositoryRoom(db)
+        repository = LavaRepositoryRoom(db, FotosPerfil(this))
         preferencias = PreferenciasStore(this)
         scope.launch { DatosIniciales.sembrar(db) }
     }

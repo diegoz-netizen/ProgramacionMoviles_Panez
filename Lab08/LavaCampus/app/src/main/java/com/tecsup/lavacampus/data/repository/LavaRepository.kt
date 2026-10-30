@@ -22,6 +22,17 @@ interface LavaRepository {
     suspend fun login(correo: String, clave: String): Usuario?
     suspend fun obtenerUsuario(id: Int): Usuario?
     fun observarClientes(): Flow<List<ClienteResumen>>
+    /** Registra un usuario nuevo y devuelve su id. */
+    suspend fun registrarUsuario(u: Usuario): Long
+    suspend fun codigoEnUso(codigo: String): Boolean
+    /** true si otro usuario (distinto de [usuarioId]) ya tiene ese correo. */
+    suspend fun correoEnUso(correo: String, usuarioId: Int): Boolean
+    /** Guarda el nombre y el correo del usuario y lo devuelve actualizado. */
+    suspend fun actualizarDatos(usuarioId: Int, nombre: String, correo: String): Usuario?
+    /** Copia la imagen elegida como foto de perfil y devuelve el usuario actualizado (null si no se pudo leer). */
+    suspend fun cambiarFoto(usuarioId: Int, uriImagen: String): Usuario?
+    /** Quita la foto de perfil (vuelven las iniciales) y devuelve el usuario actualizado. */
+    suspend fun quitarFoto(usuarioId: Int): Usuario?
 
     // Servicios (ejemplo resuelto)
     fun observarServicios(): Flow<List<Servicio>>

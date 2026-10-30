@@ -40,6 +40,7 @@ import com.tecsup.lavacampus.ui.estudiante.LoginScreen
 import com.tecsup.lavacampus.ui.estudiante.MisPedidosScreen
 import com.tecsup.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.tecsup.lavacampus.ui.estudiante.PerfilScreen
+import com.tecsup.lavacampus.ui.estudiante.RegistroScreen
 import com.tecsup.lavacampus.ui.estudiante.SplashScreen
 import com.tecsup.lavacampus.ui.estudiante.TarifasScreen
 import com.tecsup.lavacampus.viewmodel.BandejaViewModel
@@ -51,6 +52,7 @@ import com.tecsup.lavacampus.viewmodel.LavaViewModelFactory
 import com.tecsup.lavacampus.viewmodel.MisPedidosViewModel
 import com.tecsup.lavacampus.viewmodel.NuevoPedidoViewModel
 import com.tecsup.lavacampus.viewmodel.PanelViewModel
+import com.tecsup.lavacampus.viewmodel.RegistroViewModel
 import com.tecsup.lavacampus.viewmodel.ServiciosViewModel
 import com.tecsup.lavacampus.viewmodel.SesionViewModel
 
@@ -135,7 +137,15 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
         }
 
         composable(Rutas.LOGIN) {
-            LoginScreen(vm = sesion, onIngresar = ::irAPrincipal)
+            LoginScreen(vm = sesion, onIngresar = ::irAPrincipal,
+                onRegistrarse = { nav.navigate(Rutas.REGISTRO) })
+        }
+
+        composable(Rutas.REGISTRO) {
+            val vm: RegistroViewModel = viewModel(factory = factory)
+            // Al crear la cuenta se inicia sesión; cuando hay usuario, va directo a su Inicio
+            LaunchedEffect(usuario) { usuario?.let { irAPrincipal(Rol.valueOf(it.rol)) } }
+            RegistroScreen(vm = vm, sesion = sesion, onBack = { nav.popBackStack() })
         }
 
         // ---------- Estudiante ----------
@@ -149,6 +159,7 @@ fun NavLava(factory: LavaViewModelFactory, sesion: SesionViewModel) {
                 onMisPedidos = { irAPestana(Rutas.MIS_PEDIDOS) },
                 onTarifas = { irAPestana(Rutas.TARIFAS) },
                 onPedido = { nav.navigate(Rutas.detallePedido(it)) },
+                onPerfil = { irAPestana(Rutas.PERFIL) },
                 barraInferior = barraEstudiante
             )
         }

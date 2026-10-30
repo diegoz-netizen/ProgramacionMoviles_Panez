@@ -88,7 +88,7 @@ fun GestionPedidoScreen(vm: GestionPedidoViewModel, pedidoId: Int, onBack: () ->
             // Estudiante
             Bloque {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    AvatarIniciales(d.usuario.nombre)
+                    AvatarIniciales(d.usuario.nombre, foto = d.usuario.foto)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(d.usuario.nombre, style = MaterialTheme.typography.titleMedium)

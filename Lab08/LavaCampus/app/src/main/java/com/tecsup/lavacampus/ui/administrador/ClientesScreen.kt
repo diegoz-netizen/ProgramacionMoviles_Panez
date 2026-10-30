@@ -70,7 +70,7 @@ private fun TarjetaCliente(c: ClienteResumen) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            AvatarIniciales(c.nombre)
+            AvatarIniciales(c.nombre, foto = c.foto)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(c.nombre, style = MaterialTheme.typography.titleMedium)

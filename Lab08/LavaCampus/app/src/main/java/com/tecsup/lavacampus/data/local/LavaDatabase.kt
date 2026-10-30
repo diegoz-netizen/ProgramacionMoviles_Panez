@@ -17,7 +17,7 @@ import com.tecsup.lavacampus.data.local.entity.Usuario
 
 @Database(
     entities = [Servicio::class, Usuario::class, Pedido::class, DetallePedido::class],
-    version = 2, // v2: columna descuento en pedidos (descuento por volumen)
+    version = 3, // v2: columna descuento en pedidos · v3: columna foto en usuarios
     exportSchema = false
 )
 abstract class LavaDatabase : RoomDatabase() {
@@ -36,13 +36,34 @@ abstract class LavaDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v2 -> v3: agrega la columna foto sin borrar los usuarios existentes
+         * y les pone su avatar a las cuentas de prueba (las demás quedan con sus iniciales).
+         */
+        val MIGRACION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE usuarios ADD COLUMN foto TEXT")
+                AVATARES_DE_PRUEBA.forEach { (correo, avatar) ->
+                    db.execSQL("UPDATE usuarios SET foto = ? WHERE correo = ?", arrayOf<Any>(avatar, correo))
+                }
+            }
+        }
+
+        /** Avatar incluido de cada cuenta de prueba (mismo valor que en DatosIniciales). */
+        private val AVATARES_DE_PRUEBA = mapOf(
+            "diego@correo.test" to "avatar:diego",
+            "luis@correo.test" to "avatar:luis",
+            "marta@correo.test" to "avatar:marta",
+            "admin@lavacampus.test" to "avatar:admin"
+        )
+
         /** Una sola instancia de la base para toda la app (singleton). */
         fun obtener(context: Context): LavaDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(
                 context.applicationContext,
                 LavaDatabase::class.java,
                 "lavacampus.db"
-            ).addMigrations(MIGRACION_1_2).build().also { INSTANCE = it }
+            ).addMigrations(MIGRACION_1_2, MIGRACION_2_3).build().also { INSTANCE = it }
         }
     }
 }

@@ -117,6 +117,70 @@ class SesionViewModel(
         }
     }
 
+    // ---------- Editar nombre y correo ----------
+    private val _errorNombre = MutableStateFlow<String?>(null)
+    val errorNombre: StateFlow<String?> = _errorNombre.asStateFlow()
+
+    private val _errorCorreo = MutableStateFlow<String?>(null)
+    val errorCorreo: StateFlow<String?> = _errorCorreo.asStateFlow()
+
+    /**
+     * Valida y guarda el nombre y el correo del usuario conectado.
+     * Reglas: nombre de al menos 3 letras, correo con formato válido y que no lo use otro usuario
+     * (el correo es con el que se inicia sesión, por eso no se puede repetir).
+     * [alGuardar] se llama solo si todo salió bien (la pantalla cierra el formulario).
+     */
+    fun guardarDatos(nombre: String, correo: String, alGuardar: () -> Unit) {
+        val actual = _usuarioActual.value ?: return
+        val n = nombre.trim().replace(Regex("\\s+"), " ")
+        val c = correo.trim().lowercase()
+        _errorNombre.value = if (n.length < 3) "Escribe un nombre de al menos 3 letras" else null
+        _errorCorreo.value = if (!FORMATO_CORREO.matches(c)) "Escribe un correo válido (ejemplo@correo.com)" else null
+        if (_errorNombre.value != null || _errorCorreo.value != null) return
+
+        viewModelScope.launch {
+            if (repo.correoEnUso(c, actual.id)) {
+                _errorCorreo.value = "Ese correo ya lo usa otra cuenta"
+                return@launch
+            }
+            repo.actualizarDatos(actual.id, n, c)?.let { _usuarioActual.value = it }
+            alGuardar()
+        }
+    }
+
+    /** Limpia los errores al abrir o cerrar el formulario. */
+    fun limpiarErroresDatos() {
+        _errorNombre.value = null
+        _errorCorreo.value = null
+    }
+
+    // ---------- Foto de perfil ----------
+    private val _avisoFoto = MutableStateFlow<String?>(null)
+    /** Mensaje si la imagen elegida no se pudo usar. */
+    val avisoFoto: StateFlow<String?> = _avisoFoto.asStateFlow()
+
+    /** Guarda la imagen elegida en la galería como foto del usuario conectado. */
+    fun cambiarFoto(uriImagen: String) {
+        val actual = _usuarioActual.value ?: return
+        viewModelScope.launch {
+            val nuevo = repo.cambiarFoto(actual.id, uriImagen)
+            if (nuevo == null) {
+                _avisoFoto.value = "No se pudo usar esa imagen. Prueba con otra."
+            } else {
+                _avisoFoto.value = null
+                _usuarioActual.value = nuevo // todas las pantallas que muestran al usuario se actualizan
+            }
+        }
+    }
+
+    fun quitarFoto() {
+        val actual = _usuarioActual.value ?: return
+        viewModelScope.launch {
+            repo.quitarFoto(actual.id)?.let { _usuarioActual.value = it }
+            _avisoFoto.value = null
+        }
+    }
+
     fun cambiarModoOscuro(activo: Boolean) {
         viewModelScope.launch { prefs.guardarModoOscuro(activo) }
     }
@@ -127,5 +191,10 @@ class SesionViewModel(
 
     fun cambiarRecibirPedidos(activo: Boolean) {
         viewModelScope.launch { prefs.guardarRecibirPedidos(activo) }
+    }
+
+    companion object {
+        /** algo@dominio.ext, sin espacios. */
+        val FORMATO_CORREO = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
     }
 }

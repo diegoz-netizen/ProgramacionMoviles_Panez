@@ -35,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -60,11 +61,13 @@ fun InicioScreen(
     onMisPedidos: () -> Unit,
     onTarifas: () -> Unit,
     onPedido: (Int) -> Unit,
+    onPerfil: () -> Unit,
     barraInferior: @Composable () -> Unit
 ) {
     LaunchedEffect(usuario.id) { vm.cargar(usuario.id) }
     val activo by vm.pedidoActivo.collectAsStateWithLifecycle()
     val recientes by vm.recientes.collectAsStateWithLifecycle()
+    val saludo by vm.saludo.collectAsStateWithLifecycle()
 
     Scaffold(
         bottomBar = barraInferior,
@@ -75,7 +78,7 @@ fun InicioScreen(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item { Saludo(usuario) }
+            item { Saludo(saludo, usuario, onPerfil) }
             item { TarjetaPedidoActivo(activo, onPedido) }
             item { LavaButton("Nuevo pedido", onClick = onNuevoPedido, icono = Icons.Filled.Add) }
             item {
@@ -110,15 +113,19 @@ fun InicioScreen(
 }
 
 @Composable
-private fun Saludo(usuario: Usuario) {
+private fun Saludo(saludo: String, usuario: Usuario, onPerfil: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text("Hola, ${usuario.nombre.substringBefore(' ')}",
+            Text("$saludo, ${usuario.nombre.substringBefore(' ')}",
                 style = MaterialTheme.typography.headlineMedium)
             Text("Código ${usuario.codigo}", style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        AvatarIniciales(usuario.nombre, tam = 48.dp)
+        // Tocar la foto lleva al Perfil, como en la mayoría de apps
+        AvatarIniciales(
+            usuario.nombre, tam = 48.dp, foto = usuario.foto,
+            modifier = Modifier.clip(CircleShape).clickable(onClickLabel = "Abrir perfil", onClick = onPerfil)
+        )
     }
 }
 

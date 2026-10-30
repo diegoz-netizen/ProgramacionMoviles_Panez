@@ -21,6 +21,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.tecsup.lavacampus.ui.components.DialogoEditarDatos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -48,6 +52,8 @@ fun PerfilScreen(
     val stats by pedidosVm.estadisticas.collectAsStateWithLifecycle()
     val oscuro by sesion.modoOscuro.collectAsStateWithLifecycle()
     val avisos by sesion.notificaciones.collectAsStateWithLifecycle()
+    val avisoFoto by sesion.avisoFoto.collectAsStateWithLifecycle()
+    var editando by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = { AppTopBar("Mi perfil") },
@@ -58,7 +64,12 @@ fun PerfilScreen(
             Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            TarjetaUsuario(usuario)
+            TarjetaUsuario(usuario, onCambiarFoto = sesion::cambiarFoto,
+                onQuitarFoto = sesion::quitarFoto, aviso = avisoFoto,
+                onEditarDatos = { editando = true })
+            if (editando) {
+                DialogoEditarDatos(sesion = sesion, usuario = usuario, onCerrar = { editando = false })
+            }
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Contador("Activos", stats.activos.toString(), Modifier.weight(1f))

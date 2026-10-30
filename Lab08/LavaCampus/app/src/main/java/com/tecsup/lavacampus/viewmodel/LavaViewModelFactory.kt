@@ -26,6 +26,7 @@ class LavaViewModelFactory(
         modelClass.isAssignableFrom(BandejaViewModel::class.java) -> BandejaViewModel(repo)
         modelClass.isAssignableFrom(GestionPedidoViewModel::class.java) -> GestionPedidoViewModel(repo)
         modelClass.isAssignableFrom(ClientesViewModel::class.java) -> ClientesViewModel(repo)
+        modelClass.isAssignableFrom(RegistroViewModel::class.java) -> RegistroViewModel(repo)
         else -> throw IllegalArgumentException("ViewModel desconocido: ${modelClass.name}")
     } as T
 }

@@ -18,6 +18,23 @@ interface UsuarioDao {
 
     @Insert suspend fun insertarTodos(lista: List<Usuario>)
 
+    /** Registro de un usuario nuevo; devuelve su id. */
+    @Insert suspend fun insertar(u: Usuario): Long
+
+    @Query("SELECT COUNT(*) FROM usuarios WHERE UPPER(codigo) = UPPER(:codigo)")
+    suspend fun contarCodigo(codigo: String): Int
+
+    /** Cuántos OTROS usuarios ya usan ese correo (sin distinguir mayúsculas). */
+    @Query("SELECT COUNT(*) FROM usuarios WHERE LOWER(correo) = LOWER(:correo) AND id != :id")
+    suspend fun contarCorreoDeOtros(correo: String, id: Int): Int
+
+    @Query("UPDATE usuarios SET nombre = :nombre, correo = :correo WHERE id = :id")
+    suspend fun actualizarDatos(id: Int, nombre: String, correo: String)
+
+    /** Guarda la ruta de la foto de perfil (null = quitar la foto). */
+    @Query("UPDATE usuarios SET foto = :ruta WHERE id = :id")
+    suspend fun cambiarFoto(id: Int, ruta: String?)
+
     @Query("SELECT COUNT(*) FROM usuarios")
     suspend fun contar(): Int
 
@@ -27,7 +44,7 @@ interface UsuarioDao {
      */
     @Query(
         """
-        SELECT u.id, u.nombre, u.codigo, u.correo,
+        SELECT u.id, u.nombre, u.codigo, u.correo, u.foto,
                COUNT(CASE WHEN p.estado != 'CANCELADO' THEN p.id END) AS cantidadPedidos,
                COALESCE(SUM(CASE WHEN p.pagado = 1 THEN p.total END), 0.0) AS totalGastado
         FROM usuarios u

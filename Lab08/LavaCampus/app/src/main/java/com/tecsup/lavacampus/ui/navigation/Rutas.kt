@@ -4,6 +4,7 @@ object Rutas {
     // Comunes
     const val SPLASH = "splash"
     const val LOGIN = "login"
+    const val REGISTRO = "registro"
 
     // Estudiante
     const val INICIO = "inicio"

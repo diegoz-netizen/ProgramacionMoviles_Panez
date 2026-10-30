@@ -26,10 +26,10 @@ object DatosIniciales {
     )
 
     val usuarios = listOf(
-        Usuario(nombre = "Diego Panez", codigo = "U202310234", correo = "diego@correo.test", clave = "1234", rol = Rol.CLIENTE.name),
-        Usuario(nombre = "Luis Quispe", codigo = "U202311578", correo = "luis@correo.test", clave = "1234", rol = Rol.CLIENTE.name),
-        Usuario(nombre = "Marta Rojas", codigo = "U202312906", correo = "marta@correo.test", clave = "1234", rol = Rol.CLIENTE.name),
-        Usuario(nombre = "Administrador", codigo = "", correo = "admin@lavacampus.test", clave = "admin", rol = Rol.ADMIN.name)
+        Usuario(nombre = "Diego Panez", codigo = "U202310234", correo = "diego@correo.test", clave = "1234", rol = Rol.CLIENTE.name, foto = "avatar:diego"),
+        Usuario(nombre = "Luis Quispe", codigo = "U202311578", correo = "luis@correo.test", clave = "1234", rol = Rol.CLIENTE.name, foto = "avatar:luis"),
+        Usuario(nombre = "Marta Rojas", codigo = "U202312906", correo = "marta@correo.test", clave = "1234", rol = Rol.CLIENTE.name, foto = "avatar:marta"),
+        Usuario(nombre = "Administrador", codigo = "", correo = "admin@lavacampus.test", clave = "admin", rol = Rol.ADMIN.name, foto = "avatar:admin")
     )
 
     suspend fun sembrar(db: LavaDatabase) {

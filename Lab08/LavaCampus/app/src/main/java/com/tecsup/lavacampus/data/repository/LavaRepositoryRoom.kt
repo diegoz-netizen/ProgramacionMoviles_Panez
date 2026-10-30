@@ -1,6 +1,8 @@
 package com.tecsup.lavacampus.data.repository
 
+import android.net.Uri
 import androidx.room.withTransaction
+import com.tecsup.lavacampus.data.local.FotosPerfil
 import com.tecsup.lavacampus.data.local.LavaDatabase
 import com.tecsup.lavacampus.data.local.entity.DetallePedido
 import com.tecsup.lavacampus.data.local.entity.Pedido
@@ -15,10 +17,13 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 /**
- * Implementación del contrato con Room. Solo conoce los DAOs, nunca pantallas ni ViewModels.
+ * Implementación del contrato con Room. Solo conoce los DAOs (y el almacén de fotos), nunca pantallas ni ViewModels.
  * No valida reglas de negocio: esas viven en los ViewModels.
  */
-class LavaRepositoryRoom(private val db: LavaDatabase) : LavaRepository {
+class LavaRepositoryRoom(
+    private val db: LavaDatabase,
+    private val fotos: FotosPerfil
+) : LavaRepository {
 
     private val servicioDao = db.servicioDao()
     private val usuarioDao = db.usuarioDao()
@@ -32,6 +37,34 @@ class LavaRepositoryRoom(private val db: LavaDatabase) : LavaRepository {
     override suspend fun obtenerUsuario(id: Int): Usuario? = usuarioDao.obtener(id)
 
     override fun observarClientes(): Flow<List<ClienteResumen>> = usuarioDao.observarClientes()
+
+    override suspend fun registrarUsuario(u: Usuario): Long = usuarioDao.insertar(u)
+
+    override suspend fun codigoEnUso(codigo: String): Boolean = usuarioDao.contarCodigo(codigo) > 0
+
+    override suspend fun correoEnUso(correo: String, usuarioId: Int): Boolean =
+        usuarioDao.contarCorreoDeOtros(correo, usuarioId) > 0
+
+    override suspend fun actualizarDatos(usuarioId: Int, nombre: String, correo: String): Usuario? {
+        usuarioDao.actualizarDatos(usuarioId, nombre, correo)
+        return usuarioDao.obtener(usuarioId)
+    }
+
+    /** Guarda la nueva foto, apunta la columna foto al archivo y borra el archivo de la foto anterior. */
+    override suspend fun cambiarFoto(usuarioId: Int, uriImagen: String): Usuario? {
+        val anterior = usuarioDao.obtener(usuarioId) ?: return null
+        val ruta = fotos.guardar(usuarioId, Uri.parse(uriImagen)) ?: return null
+        usuarioDao.cambiarFoto(usuarioId, ruta)
+        fotos.borrar(anterior.foto)
+        return usuarioDao.obtener(usuarioId)
+    }
+
+    override suspend fun quitarFoto(usuarioId: Int): Usuario? {
+        val anterior = usuarioDao.obtener(usuarioId) ?: return null
+        usuarioDao.cambiarFoto(usuarioId, null)
+        fotos.borrar(anterior.foto)
+        return usuarioDao.obtener(usuarioId)
+    }
 
     // ---------- Servicios ----------
     override fun observarServicios(): Flow<List<Servicio>> = servicioDao.observarTodos()
