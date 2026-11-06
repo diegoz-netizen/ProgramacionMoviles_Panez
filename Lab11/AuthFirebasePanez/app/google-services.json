@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "844374791088",
+    "project_id": "lab09-diego-panez",
+    "storage_bucket": "lab09-diego-panez.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:844374791088:android:eecacf44e94b1989497c75",
+        "android_client_info": {
+          "package_name": "com.tecsup.authfirebasepanez"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfxCVKcgVUG1A-Vke88LPO6QHNHI8SNI0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
