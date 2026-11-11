@@ -1,0 +1,12 @@
+// Reglas de Cloud Firestore (se pegan en Firebase > Firestore Database > Reglas y se publican).
+// Cada persona solo puede leer su propio documento usuarios/{uid}; nadie escribe desde la app.
+// El rol se valida en la app solo para decidir qué pantallas ver: lo que protege los datos son estas reglas.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /usuarios/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+  }
+}
