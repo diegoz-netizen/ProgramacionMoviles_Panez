@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [ItemEntity::class, FavoritoEntity::class], version = 2, exportSchema = false)
+@Database(entities = [ItemEntity::class, FavoritoEntity::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun itemDao(): ItemDao
 
@@ -25,9 +25,16 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** v2 -> v3: columna tipo en items para el filtro (los guardados quedan sin tipo hasta sincronizar). */
+        private val MIGRACION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE items ADD COLUMN tipo TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun crear(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "pokedex.db")
-                .addMigrations(MIGRACION_1_2)
+                .addMigrations(MIGRACION_1_2, MIGRACION_2_3)
                 .build()
     }
 }

@@ -9,5 +9,7 @@ data class ItemEntity(
     val titulo: String,
     val subtitulo: String,
     val imagenUrl: String?,
-    val esFavorito: Boolean = false
+    val esFavorito: Boolean = false,
+    /** Tipo con el que se descargó ("fuego", "agua", "planta"). Lo usa el filtro de la lista. */
+    val tipo: String = ""
 )

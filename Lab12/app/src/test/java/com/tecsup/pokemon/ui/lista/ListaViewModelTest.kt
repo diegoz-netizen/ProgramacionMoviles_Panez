@@ -118,4 +118,19 @@ class ListaViewModelTest {
         vm.buscar("")
         assertEquals(2, (vm.estado.value as UiState.Exito).datos.size)
     }
+
+    @Test
+    fun filtrarPorTipoMuestraSoloEseTipoYLosTiposDisponibles() {
+        val repo = FakeItemRepository(
+            listOf(unItem("charmander").copy(tipo = "fuego"), unItem("squirtle").copy(tipo = "agua"))
+        )
+        val vm = ListaViewModel(repo, notificador)
+
+        assertEquals(listOf("agua", "fuego"), vm.tiposDisponibles.value)
+        vm.filtrarPorTipo("agua")
+        assertEquals(listOf("squirtle"), (vm.estado.value as UiState.Exito).datos.map { it.id })
+
+        vm.filtrarPorTipo("agua") // tocar el mismo otra vez vuelve a "Todos"
+        assertEquals(2, (vm.estado.value as UiState.Exito).datos.size)
+    }
 }

@@ -10,6 +10,8 @@ data class Item(
     val subtitulo: String,
     val imagenUrl: String?,
     val esFavorito: Boolean = false,
+    /** Tipo de la lista ("fuego", "agua", "planta"); sirve para el filtro. */
+    val tipo: String = "",
     val numero: Int? = null,
     val alturaM: Double? = null,
     val pesoKg: Double? = null,

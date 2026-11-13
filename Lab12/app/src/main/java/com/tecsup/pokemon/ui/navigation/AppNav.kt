@@ -140,11 +140,16 @@ private fun Catalogo(container: AppContainer, sesion: Sesion, onCerrarSesion: ()
                 val estado by vm.estado.collectAsStateWithLifecycle()
                 val aviso by vm.aviso.collectAsStateWithLifecycle()
                 val busqueda by vm.busqueda.collectAsStateWithLifecycle()
+                val tipos by vm.tiposDisponibles.collectAsStateWithLifecycle()
+                val filtroTipo by vm.filtroTipo.collectAsStateWithLifecycle()
                 ListaScreen(
                     estado = estado,
                     aviso = aviso,
                     busqueda = busqueda,
                     onBuscar = vm::buscar,
+                    tipos = tipos,
+                    filtroTipo = filtroTipo,
+                    onFiltrarTipo = vm::filtrarPorTipo,
                     onItemClick = { nav.navigate(Rutas.detalle(it.id)) },
                     onFavorito = { vm.alternarFavorito(it.id) },
                     onReintentar = vm::refrescar

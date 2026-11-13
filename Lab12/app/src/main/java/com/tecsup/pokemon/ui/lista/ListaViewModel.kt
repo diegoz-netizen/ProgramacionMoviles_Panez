@@ -30,14 +30,22 @@ class ListaViewModel(
     private val _busqueda = MutableStateFlow("")
     val busqueda: StateFlow<String> = _busqueda.asStateFlow()
 
+    // Tipo elegido en el filtro (null = todos) y tipos que hay en Room para mostrar en el filtro
+    private val _filtroTipo = MutableStateFlow<String?>(null)
+    val filtroTipo: StateFlow<String?> = _filtroTipo.asStateFlow()
+    private val _tiposDisponibles = MutableStateFlow<List<String>>(emptyList())
+    val tiposDisponibles: StateFlow<List<String>> = _tiposDisponibles.asStateFlow()
+
     // Evita mostrar "vacío" antes de que responda la API la primera vez
     private var refrescoTerminado = false
 
     init {
         viewModelScope.launch {
-            combine(repo.items, _busqueda) { lista, texto -> lista to texto }.collect { (lista, texto) ->
-                if (lista.isNotEmpty() || refrescoTerminado) _estado.value = UiState.Exito(filtrar(lista, texto))
-            }
+            combine(repo.items, _busqueda, _filtroTipo) { lista, texto, tipo -> Triple(lista, texto, tipo) }
+                .collect { (lista, texto, tipo) ->
+                    _tiposDisponibles.value = lista.map { it.tipo }.filter { it.isNotBlank() }.distinct().sorted()
+                    if (lista.isNotEmpty() || refrescoTerminado) _estado.value = UiState.Exito(filtrar(lista, texto, tipo))
+                }
         }
         refrescar()
     }
@@ -46,10 +54,17 @@ class ListaViewModel(
         _busqueda.value = texto
     }
 
+    /** Elige un tipo del filtro; si se toca el mismo otra vez (o null) se ven todos. */
+    fun filtrarPorTipo(tipo: String?) {
+        _filtroTipo.value = if (tipo == _filtroTipo.value) null else tipo
+    }
+
     /** Coincidencia por nombre, sin importar mayúsculas: "char" encuentra a Charizard y Charmander. */
-    private fun filtrar(lista: List<Item>, texto: String): List<Item> {
+    private fun filtrar(lista: List<Item>, texto: String, tipo: String?): List<Item> {
         val buscado = texto.trim()
-        return if (buscado.isEmpty()) lista else lista.filter { it.titulo.contains(buscado, ignoreCase = true) }
+        return lista
+            .filter { tipo == null || it.tipo == tipo }
+            .filter { buscado.isEmpty() || it.titulo.contains(buscado, ignoreCase = true) }
     }
 
     fun refrescar() {

@@ -31,9 +31,15 @@ class ItemRepositoryImpl(
     override val favoritos: Flow<List<Item>>
         get() = dao.favoritos(uid()).map { lista -> lista.map { it.aModelo() } }
 
+// --------------"
+
     override suspend fun refrescar(): Result<Int> = conErrores {
-        // Los favoritos viven en su propia tabla, así que el Upsert de items ya no los borra
-        val nuevos = api.listar().pokemon.map { it.pokemon.aEntity() }
+        val fuego = api.listar("fire").pokemon.map { it.pokemon.aEntity("fuego") }
+        val agua = api.listar("water").pokemon.map { it.pokemon.aEntity("agua") }
+        val planta = api.listar("grass").pokemon.map { it.pokemon.aEntity("planta") }
+        // El filtro de la lista muestra los tipos que se suman aquí (fuego, fuego + agua, o los tres).
+        // Un Pokémon de dos tipos (por ejemplo Volcanion) se queda con el primero de la suma.
+        val nuevos = (fuego + agua + planta).distinctBy { it.id }
         dao.guardarTodos(nuevos)
         nuevos.size
     }

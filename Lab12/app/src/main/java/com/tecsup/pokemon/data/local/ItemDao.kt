@@ -11,14 +11,14 @@ import kotlinx.coroutines.flow.Flow
 interface ItemDao {
     // esFavorito se calcula con la tabla favoritos de la cuenta (:uid), no con la columna de items
     @Query(
-        """SELECT id, titulo, subtitulo, imagenUrl,
+        """SELECT id, titulo, subtitulo, imagenUrl, tipo,
            EXISTS(SELECT 1 FROM favoritos f WHERE f.itemId = items.id AND f.uid = :uid) AS esFavorito
            FROM items ORDER BY titulo"""
     )
     fun todos(uid: String): Flow<List<ItemEntity>>
 
     @Query(
-        """SELECT id, titulo, subtitulo, imagenUrl, 1 AS esFavorito
+        """SELECT id, titulo, subtitulo, imagenUrl, tipo, 1 AS esFavorito
            FROM items JOIN favoritos f ON f.itemId = items.id
            WHERE f.uid = :uid ORDER BY titulo"""
     )

@@ -16,14 +16,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -32,6 +37,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,18 +71,27 @@ fun ListaScreen(
     modifier: Modifier = Modifier,
     aviso: String? = null,
     busqueda: String = "",
-    onBuscar: (String) -> Unit = {}
+    onBuscar: (String) -> Unit = {},
+    tipos: List<String> = emptyList(),
+    filtroTipo: String? = null,
+    onFiltrarTipo: (String?) -> Unit = {}
 ) {
     when (estado) {
         is UiState.Cargando -> Cargando(modifier)
         is UiState.Error -> ErrorView(estado.mensaje, onReintentar, modifier)
         is UiState.Exito -> Column(modifier.fillMaxSize()) {
             if (aviso != null) AvisoSinConexion(aviso, onReintentar)
-            BarraBusqueda(busqueda, onBuscar)
+            Row(
+                Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                BarraBusqueda(busqueda, onBuscar, Modifier.weight(1f))
+                FiltroTipo(tipos, filtroTipo, onFiltrarTipo)
+            }
             if (estado.datos.isEmpty()) {
                 VacioView(
-                    if (busqueda.isBlank()) "No hay Pokémon para mostrar"
-                    else "Ningún Pokémon coincide con \"${busqueda.trim()}\""
+                    if (busqueda.isBlank() && filtroTipo == null) "No hay Pokémon para mostrar"
+                    else "Ningún Pokémon coincide con la búsqueda"
                 )
             } else {
                 ListaItems(estado.datos, onItemClick, onFavorito)
@@ -84,7 +102,7 @@ fun ListaScreen(
 
 /** Campo para filtrar la lista por nombre, con botón para borrar lo escrito. */
 @Composable
-private fun BarraBusqueda(texto: String, onBuscar: (String) -> Unit) {
+private fun BarraBusqueda(texto: String, onBuscar: (String) -> Unit, modifier: Modifier = Modifier) {
     OutlinedTextField(
         value = texto,
         onValueChange = onBuscar,
@@ -103,8 +121,40 @@ private fun BarraBusqueda(texto: String, onBuscar: (String) -> Unit) {
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
-        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 12.dp)
+        modifier = modifier
     )
+}
+
+/**
+ * Botón de filtro al costado de la búsqueda. Solo ofrece los tipos que hay guardados en Room
+ * (los que se sumaron en refrescar()). Se pinta relleno cuando hay un tipo elegido.
+ */
+@Composable
+private fun FiltroTipo(tipos: List<String>, elegido: String?, onElegir: (String?) -> Unit) {
+    var abierto by remember { mutableStateOf(false) }
+    Box {
+        IconButton(
+            onClick = { abierto = true },
+            enabled = tipos.isNotEmpty(),
+            colors = if (elegido != null) IconButtonDefaults.filledIconButtonColors() else IconButtonDefaults.iconButtonColors()
+        ) {
+            Icon(Icons.Filled.FilterList, contentDescription = "Filtrar por tipo")
+        }
+        DropdownMenu(expanded = abierto, onDismissRequest = { abierto = false }) {
+            DropdownMenuItem(
+                text = { Text("Todos") },
+                leadingIcon = { if (elegido == null) Icon(Icons.Filled.Check, contentDescription = null) },
+                onClick = { onElegir(null); abierto = false }
+            )
+            tipos.forEach { tipo ->
+                DropdownMenuItem(
+                    text = { Text(tipo.replaceFirstChar(Char::uppercase)) },
+                    leadingIcon = { if (elegido == tipo) Icon(Icons.Filled.Check, contentDescription = null) },
+                    onClick = { onElegir(tipo); abierto = false }
+                )
+            }
+        }
+    }
 }
 
 /** Franja superior que avisa que los datos son los guardados en el celular. */

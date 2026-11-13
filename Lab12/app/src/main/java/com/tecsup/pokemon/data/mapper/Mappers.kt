@@ -16,12 +16,13 @@ private fun nombreBonito(nombre: String) =
 private fun ItemDto.numero(): String = url.trimEnd('/').substringAfterLast('/')
 
 /** Dto (API) -> Entity (Room). El id es el nombre (lo usa el endpoint de detalle). */
-fun ItemDto.aEntity(esFavorito: Boolean = false) = ItemEntity(
+fun ItemDto.aEntity(tipo: String, esFavorito: Boolean = false) = ItemEntity(
     id = name,
     titulo = nombreBonito(name),
-    subtitulo = "N.º ${numero()} · Tipo fuego",
+    subtitulo = "N.º ${numero()} · Tipo $tipo",
     imagenUrl = "$SPRITES${numero()}.png",
-    esFavorito = esFavorito
+    esFavorito = esFavorito,
+    tipo = tipo
 )
 
 /** Entity (Room) -> modelo de la UI. */
@@ -30,7 +31,8 @@ fun ItemEntity.aModelo() = Item(
     titulo = titulo,
     subtitulo = subtitulo,
     imagenUrl = imagenUrl,
-    esFavorito = esFavorito
+    esFavorito = esFavorito,
+    tipo = tipo
 )
 
 /** Detalle -> modelo de la UI, con altura y peso en metros y kilos. */
