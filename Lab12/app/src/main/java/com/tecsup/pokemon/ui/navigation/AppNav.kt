@@ -14,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Settings
@@ -46,6 +47,7 @@ import com.tecsup.pokemon.ui.lista.ListaScreen
 import com.tecsup.pokemon.ui.lista.ListaViewModel
 import com.tecsup.pokemon.ui.login.LoginScreen
 import com.tecsup.pokemon.ui.login.LoginViewModel
+import com.tecsup.pokemon.ui.login.RegistroScreen
 
 object Rutas {
     const val LISTA = "lista"
@@ -64,10 +66,18 @@ fun AppNav(container: AppContainer) {
 
     when {
         login.revisandoSesion -> Cargando()
+        sesion == null && login.registrando -> RegistroScreen(
+            estado = login,
+            onRegistrar = loginVm::registrar,
+            onEscribir = loginVm::limpiarError,
+            onVolver = loginVm::volverALogin,
+            modifier = Modifier.safeDrawingPadding()
+        )
         sesion == null -> LoginScreen(
             estado = login,
             onIngresar = loginVm::iniciarSesion,
             onEscribir = loginVm::limpiarError,
+            onIrARegistro = loginVm::irARegistro,
             modifier = Modifier.safeDrawingPadding()
         )
         else -> Catalogo(container, sesion, onCerrarSesion = loginVm::cerrarSesion)
@@ -82,6 +92,8 @@ private fun Catalogo(container: AppContainer, sesion: Sesion, onCerrarSesion: ()
     val nav = rememberNavController()
     val entrada by nav.currentBackStackEntryAsState()
     val rutaActual = entrada?.destination?.route
+    // En el detalle no hay pestaña propia: se resalta la pestaña desde la que se abrió (Pokémon o Favoritos)
+    val pestanaActiva = if (rutaActual == Rutas.DETALLE) nav.previousBackStackEntry?.destination?.route else rutaActual
 
     Scaffold(
         topBar = {
@@ -92,9 +104,18 @@ private fun Catalogo(container: AppContainer, sesion: Sesion, onCerrarSesion: ()
                         Text(sesion.correo, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f))
                     }
                 },
+                // En el detalle aparece la flecha para volver a la pantalla anterior
+                navigationIcon = {
+                    if (rutaActual == Rutas.DETALLE) {
+                        IconButton(onClick = { nav.popBackStack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 actions = {
@@ -106,9 +127,9 @@ private fun Catalogo(container: AppContainer, sesion: Sesion, onCerrarSesion: ()
         },
         bottomBar = {
             NavigationBar {
-                PestanaInferior(nav, rutaActual, Rutas.LISTA, Icons.Filled.LocalFireDepartment, "Pokémon")
-                PestanaInferior(nav, rutaActual, Rutas.FAVORITOS, Icons.Filled.Star, "Favoritos")
-                if (esAdmin) PestanaInferior(nav, rutaActual, Rutas.ADMIN, Icons.Filled.Settings, "Admin")
+                PestanaInferior(nav, pestanaActiva, Rutas.LISTA, Icons.Filled.LocalFireDepartment, "Pokémon")
+                PestanaInferior(nav, pestanaActiva, Rutas.FAVORITOS, Icons.Filled.Star, "Favoritos")
+                if (esAdmin) PestanaInferior(nav, pestanaActiva, Rutas.ADMIN, Icons.Filled.Settings, "Admin")
             }
         }
     ) { padding ->
