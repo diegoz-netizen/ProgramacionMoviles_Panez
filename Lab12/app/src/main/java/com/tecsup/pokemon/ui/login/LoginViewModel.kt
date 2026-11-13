@@ -15,7 +15,9 @@ data class LoginUiState(
     val revisandoSesion: Boolean = true,
     val cargando: Boolean = false,
     val error: String? = null,
-    val sesion: Sesion? = null
+    val sesion: Sesion? = null,
+    /** true: se muestra la pantalla de registro en lugar del login. */
+    val registrando: Boolean = false
 )
 
 /** Ingreso, sesión guardada y cierre de sesión. Vive mientras la app esté abierta. */
@@ -44,6 +46,30 @@ class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
                 .onFailure { e -> _estado.update { it.copy(cargando = false, error = e.message) } }
         }
     }
+
+    /** Crea una cuenta nueva (rol USUARIO) y entra directo. Valida sin llamar a Firebase. */
+    fun registrar(correo: String, clave: String, confirmar: String) {
+        val error = when {
+            correo.isBlank() || clave.isBlank() || confirmar.isBlank() -> "Completa todos los campos"
+            !correo.contains("@") -> "Escribe un correo válido"
+            clave.length < 6 -> "La contraseña debe tener al menos 6 caracteres"
+            clave != confirmar -> "Las contraseñas no coinciden"
+            else -> null
+        }
+        if (error != null) {
+            _estado.update { it.copy(error = error) }
+            return
+        }
+        _estado.update { it.copy(cargando = true, error = null) }
+        viewModelScope.launch {
+            auth.registrar(correo.trim(), clave)
+                .onSuccess { sesion -> _estado.update { it.copy(cargando = false, sesion = sesion, registrando = false) } }
+                .onFailure { e -> _estado.update { it.copy(cargando = false, error = e.message) } }
+        }
+    }
+
+    fun irARegistro() = _estado.update { it.copy(registrando = true, error = null) }
+    fun volverALogin() = _estado.update { it.copy(registrando = false, error = null) }
 
     fun limpiarError() = _estado.update { it.copy(error = null) }
 

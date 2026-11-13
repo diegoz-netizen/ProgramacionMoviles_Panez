@@ -4,6 +4,8 @@ import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.tecsup.pokemon.domain.model.Rol
 import com.tecsup.pokemon.domain.model.Sesion
@@ -21,6 +23,17 @@ class FirebaseAuthRepository(
     override suspend fun iniciarSesion(correo: String, clave: String): Result<Sesion> = try {
         val uid = auth.signInWithEmailAndPassword(correo, clave).await().user!!.uid
         Result.success(leerSesion(uid, correo))
+    } catch (e: Exception) {
+        Result.failure(Exception(mensajeDe(e), e))
+    }
+
+    /**
+     * Crea la cuenta. No se escribe el rol en Firestore (las reglas lo prohíben, write: if false):
+     * sin documento en usuarios/{uid}, leerSesion() devuelve USUARIO. Un admin solo se crea desde la consola.
+     */
+    override suspend fun registrar(correo: String, clave: String): Result<Sesion> = try {
+        val uid = auth.createUserWithEmailAndPassword(correo, clave).await().user!!.uid
+        Result.success(Sesion(uid, correo, Rol.USUARIO))
     } catch (e: Exception) {
         Result.failure(Exception(mensajeDe(e), e))
     }
@@ -47,6 +60,8 @@ class FirebaseAuthRepository(
     private fun mensajeDe(e: Exception) = when (e) {
         is FirebaseAuthInvalidCredentialsException, is FirebaseAuthInvalidUserException ->
             "Correo o contraseña incorrectos"
+        is FirebaseAuthUserCollisionException -> "Ese correo ya tiene una cuenta"
+        is FirebaseAuthWeakPasswordException -> "La contraseña debe tener al menos 6 caracteres"
         is FirebaseNetworkException -> "No hay conexión a internet"
         else -> "No se pudo iniciar sesión"
     }

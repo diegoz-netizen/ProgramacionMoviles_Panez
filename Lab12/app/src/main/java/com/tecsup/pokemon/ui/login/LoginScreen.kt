@@ -20,6 +20,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,7 +38,8 @@ fun LoginScreen(
     estado: LoginUiState,
     onIngresar: (correo: String, clave: String) -> Unit,
     onEscribir: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onIrARegistro: () -> Unit = {}
 ) {
     // rememberSaveable: lo escrito no se pierde al girar la pantalla
     var correo by rememberSaveable { mutableStateOf("") }
@@ -105,5 +107,6 @@ fun LoginScreen(
         ) {
             Text(if (estado.cargando) "Ingresando..." else "Ingresar")
         }
+        TextButton(onClick = onIrARegistro) { Text("¿No tienes cuenta? Regístrate") }
     }
 }
