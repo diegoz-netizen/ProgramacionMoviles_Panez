@@ -17,7 +17,9 @@ data class LoginUiState(
     val error: String? = null,
     val sesion: Sesion? = null,
     /** true: se muestra la pantalla de registro en lugar del login. */
-    val registrando: Boolean = false
+    val registrando: Boolean = false,
+    /** Mensaje de confirmación en el login, por ejemplo después de registrarse. */
+    val aviso: String? = null
 )
 
 /** Ingreso, sesión guardada y cierre de sesión. Vive mientras la app esté abierta. */
@@ -47,7 +49,7 @@ class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
         }
     }
 
-    /** Crea una cuenta nueva (rol USUARIO) y entra directo. Valida sin llamar a Firebase. */
+    /** Crea una cuenta nueva (rol USUARIO) y vuelve al login para ingresar con ella. Valida sin llamar a Firebase. */
     fun registrar(correo: String, clave: String, confirmar: String) {
         val error = when {
             correo.isBlank() || clave.isBlank() || confirmar.isBlank() -> "Completa todos los campos"
@@ -63,15 +65,19 @@ class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
         _estado.update { it.copy(cargando = true, error = null) }
         viewModelScope.launch {
             auth.registrar(correo.trim(), clave)
-                .onSuccess { sesion -> _estado.update { it.copy(cargando = false, sesion = sesion, registrando = false) } }
+                .onSuccess {
+                    _estado.update {
+                        it.copy(cargando = false, registrando = false, aviso = "Cuenta creada. Ingresa con tu correo y contraseña.")
+                    }
+                }
                 .onFailure { e -> _estado.update { it.copy(cargando = false, error = e.message) } }
         }
     }
 
     fun irARegistro() = _estado.update { it.copy(registrando = true, error = null) }
-    fun volverALogin() = _estado.update { it.copy(registrando = false, error = null) }
+    fun volverALogin() = _estado.update { it.copy(registrando = false, error = null, aviso = null) }
 
-    fun limpiarError() = _estado.update { it.copy(error = null) }
+    fun limpiarError() = _estado.update { it.copy(error = null, aviso = null) }
 
     fun cerrarSesion() {
         auth.cerrarSesion()

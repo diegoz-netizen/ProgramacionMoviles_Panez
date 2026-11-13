@@ -96,6 +96,9 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
+        estado.aviso?.let {
+            Text(it, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyMedium)
+        }
         estado.error?.let {
             Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
         }

@@ -33,6 +33,8 @@ class FirebaseAuthRepository(
      */
     override suspend fun registrar(correo: String, clave: String): Result<Sesion> = try {
         val uid = auth.createUserWithEmailAndPassword(correo, clave).await().user!!.uid
+        // Firebase deja la sesión abierta al crear la cuenta: se cierra para que la persona ingrese desde el login
+        auth.signOut()
         Result.success(Sesion(uid, correo, Rol.USUARIO))
     } catch (e: Exception) {
         Result.failure(Exception(mensajeDe(e), e))
