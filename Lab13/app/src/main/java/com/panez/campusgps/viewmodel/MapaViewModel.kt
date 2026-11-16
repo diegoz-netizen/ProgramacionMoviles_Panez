@@ -1,11 +1,15 @@
 package com.panez.campusgps.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.panez.campusgps.data.LugaresRepository
 import com.panez.campusgps.data.UbicacionRepository
 import com.panez.campusgps.model.LugarConDistancia
+import com.panez.campusgps.model.Posicion
 import com.panez.campusgps.model.UbicacionUi
+import com.panez.campusgps.util.distanciaMetros
+import com.panez.campusgps.util.formatearDistancia
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,7 +37,7 @@ class MapaViewModel(
             ubicacionRepo.obtenerPosicion()
                 .onSuccess {
                     _estado.value = UbicacionUi.Lista(it)
-                    // TODO Paso 5: actualizarDistancias(it)
+                    actualizarDistancias(it)
                 }
                 .onFailure { _estado.value = UbicacionUi.Error(mensajeDe(it)) }
         }
@@ -41,6 +45,17 @@ class MapaViewModel(
 
     fun permisoDenegado() {
         _estado.value = UbicacionUi.Error("Sin permiso de ubicación no puedo mostrar dónde estás")
+    }
+
+    // Calcula la distancia a cada lugar y publica la lista ordenada de menor a mayor
+    private fun actualizarDistancias(posicion: Posicion) {
+        val ordenados = lugaresRepo.obtenerLugares()
+            .map { LugarConDistancia(it, distanciaMetros(posicion, it)) }
+            .sortedBy { it.metros }
+        _lugares.value = ordenados
+        ordenados.forEach {
+            Log.d("CampusGPS", "${it.lugar.nombre}: ${it.metros?.let(::formatearDistancia)}")
+        }
     }
 
     // TODO Paso 6: fun seleccionar(id: Int?)
