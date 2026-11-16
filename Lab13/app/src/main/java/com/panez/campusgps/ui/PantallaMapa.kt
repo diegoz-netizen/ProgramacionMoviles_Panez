@@ -1,5 +1,9 @@
 package com.panez.campusgps.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,9 +20,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.panez.campusgps.model.UbicacionUi
 import com.panez.campusgps.viewmodel.MapaViewModel
 
@@ -27,9 +33,30 @@ import com.panez.campusgps.viewmodel.MapaViewModel
 fun PantallaMapa(vm: MapaViewModel) {
     val estado by vm.estado.collectAsState()
 
+    val contexto = LocalContext.current
+    val lanzador = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { resultado ->
+        // Basta con uno (FINE o COARSE) para buscar; si niega los dos, la app sigue abierta
+        if (resultado.values.any { it }) vm.buscar() else vm.permisoDenegado()
+    }
+
+    fun tienePermiso(permiso: String) =
+        ContextCompat.checkSelfPermission(contexto, permiso) == PackageManager.PERMISSION_GRANTED
+
     fun alPulsar() {
-        // TODO Paso 2: pedir el permiso antes de buscar
-        vm.buscar()
+        if (tienePermiso(Manifest.permission.ACCESS_FINE_LOCATION) ||
+            tienePermiso(Manifest.permission.ACCESS_COARSE_LOCATION)
+        ) {
+            vm.buscar()
+        } else {
+            lanzador.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
     }
 
     Scaffold(
