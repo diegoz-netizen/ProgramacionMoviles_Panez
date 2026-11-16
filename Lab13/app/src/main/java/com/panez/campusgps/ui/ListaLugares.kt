@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.panez.campusgps.model.LugarConDistancia
+import com.panez.campusgps.ui.theme.VerdeCercano
 import com.panez.campusgps.util.formatearDistancia
 
 // Solo dibuja lo que recibe: no conoce el ViewModel
@@ -32,7 +33,8 @@ fun ListaLugares(
     lugares: List<LugarConDistancia>,
     seleccionado: Int?,
     onClick: (id: Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    masCercanoId: Int? = null
 ) {
     LazyColumn(
         modifier = modifier,
@@ -42,6 +44,7 @@ fun ListaLugares(
             TarjetaLugar(
                 item = item,
                 seleccionada = item.lugar.id == seleccionado,
+                esMasCercano = item.lugar.id == masCercanoId,
                 onClick = { onClick(item.lugar.id) }
             )
         }
@@ -52,6 +55,7 @@ fun ListaLugares(
 private fun TarjetaLugar(
     item: LugarConDistancia,
     seleccionada: Boolean,
+    esMasCercano: Boolean,
     onClick: () -> Unit
 ) {
     val colores = MaterialTheme.colorScheme
@@ -67,11 +71,11 @@ private fun TarjetaLugar(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Punto de color del lugar
+            // Punto de color: el mismo del marcador (verde el más cercano, azul los demás)
             Box(
                 modifier = Modifier
                     .size(8.dp)
-                    .background(colores.primary, CircleShape)
+                    .background(if (esMasCercano) VerdeCercano else colores.primary, CircleShape)
             )
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {

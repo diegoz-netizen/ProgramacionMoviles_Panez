@@ -11,3 +11,6 @@ val GrisTexto = Color(0xFF6B7280)
 // Tema oscuro
 val AzulCampusClaro = Color(0xFF9CCBF3)
 val AzulCampusContenedorOscuro = Color(0xFF16507E)
+
+// Mismo verde que el marcador del lugar más cercano (HUE_GREEN)
+val VerdeCercano = Color(0xFF2E9E44)

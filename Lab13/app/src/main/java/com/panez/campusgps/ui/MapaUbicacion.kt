@@ -12,6 +12,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
+import com.panez.campusgps.model.Lugar
 import com.panez.campusgps.model.LugarConDistancia
 import com.panez.campusgps.model.UbicacionUi
 
@@ -20,6 +21,7 @@ fun MapaUbicacion(
     estado: UbicacionUi,
     lugares: List<LugarConDistancia>,
     seleccionado: Int?,
+    masCercano: Lugar?,
     modifier: Modifier = Modifier
 ) {
     val camara = rememberCameraPositionState {
@@ -51,7 +53,7 @@ fun MapaUbicacion(
                 snippet = "Latitud ${estado.posicion.latitud}, longitud ${estado.posicion.longitud}"
             )
         }
-        // Un marcador azul por cada lugar (solo dibuja la lista que recibe)
+        // Un marcador por cada lugar: azul, y el más cercano en verde (solo dibuja lo que recibe)
         lugares.forEach { item ->
             key(item.lugar.id) {
                 val marcador = rememberUpdatedMarkerState(
@@ -65,7 +67,10 @@ fun MapaUbicacion(
                     state = marcador,
                     title = item.lugar.nombre,
                     snippet = item.lugar.categoria,
-                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+                    icon = BitmapDescriptorFactory.defaultMarker(
+                        if (item.lugar.id == masCercano?.id) BitmapDescriptorFactory.HUE_GREEN
+                        else BitmapDescriptorFactory.HUE_AZURE
+                    )
                 )
             }
         }

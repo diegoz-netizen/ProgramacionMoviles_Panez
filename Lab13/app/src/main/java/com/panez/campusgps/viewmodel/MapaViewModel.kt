@@ -5,14 +5,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.panez.campusgps.data.LugaresRepository
 import com.panez.campusgps.data.UbicacionRepository
+import com.panez.campusgps.model.Lugar
 import com.panez.campusgps.model.LugarConDistancia
 import com.panez.campusgps.model.Posicion
 import com.panez.campusgps.model.UbicacionUi
 import com.panez.campusgps.util.distanciaMetros
 import com.panez.campusgps.util.formatearDistancia
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MapaViewModel(
@@ -30,6 +34,11 @@ class MapaViewModel(
 
     private val _seleccionado = MutableStateFlow<Int?>(null)
     val seleccionado: StateFlow<Int?> = _seleccionado.asStateFlow()
+
+    // El primero de la lista con distancia calculada; null mientras no hay ubicación
+    val masCercano: StateFlow<Lugar?> = lugares
+        .map { lista -> lista.firstOrNull { it.metros != null }?.lugar }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun buscar() {
         _estado.value = UbicacionUi.Buscando
@@ -62,8 +71,6 @@ class MapaViewModel(
     fun seleccionar(id: Int?) {
         _seleccionado.value = id
     }
-    // TODO Paso 7: val masCercano: StateFlow<Lugar?>
-
     private fun mensajeDe(e: Throwable): String = when (e) {
         is SecurityException -> "Falta el permiso de ubicación"
         else -> e.message ?: "No se pudo obtener la ubicación"

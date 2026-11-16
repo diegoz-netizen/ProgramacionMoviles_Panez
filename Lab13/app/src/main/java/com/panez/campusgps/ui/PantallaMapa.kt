@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,8 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -23,11 +26,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.panez.campusgps.model.UbicacionUi
+import com.panez.campusgps.util.formatearDistancia
 import com.panez.campusgps.viewmodel.MapaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,6 +81,7 @@ fun PantallaMapa(vm: MapaViewModel) {
     ) { padding ->
         val lugares by vm.lugares.collectAsState()
         val seleccionado by vm.seleccionado.collectAsState()
+        val masCercano by vm.masCercano.collectAsState()
 
         Column(
             modifier = Modifier
@@ -88,6 +96,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                     estado = estado,
                     lugares = lugares,
                     seleccionado = seleccionado,
+                    masCercano = masCercano,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
@@ -117,11 +126,37 @@ fun PantallaMapa(vm: MapaViewModel) {
                     )
                 }
                 if (error == null) {
+                    OutlinedButton(
+                        onClick = { masCercano?.let { vm.seleccionar(it.id) } },
+                        enabled = masCercano != null,
+                        // Azul como en el diseño (Material 3 lo pinta gris por defecto)
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            if (masCercano != null) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.outlineVariant
+                        )
+                    ) {
+                        Text("Ir al más cercano")
+                    }
+                    val cercano = lugares.firstOrNull { it.lugar.id == masCercano?.id }
+                    if (cercano?.metros != null) {
+                        Text(
+                            buildAnnotatedString {
+                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Más cercano: ") }
+                                append("${cercano.lugar.nombre} (${formatearDistancia(cercano.metros)})")
+                            },
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                     // La lista va debajo del mapa, con altura fija
                     ListaLugares(
                         lugares = lugares,
                         seleccionado = seleccionado,
                         onClick = { vm.seleccionar(it) },
+                        masCercanoId = masCercano?.id,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(220.dp)
