@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -95,7 +96,7 @@ fun PantallaMapa(vm: MapaViewModel) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -108,14 +109,22 @@ fun PantallaMapa(vm: MapaViewModel) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     UbicacionUi.Buscando -> Text("Buscando tu ubicación…")
-                    is UbicacionUi.Lista -> {
-                        Text("Latitud: ${e.posicion.latitud}")
-                        Text("Longitud: ${e.posicion.longitud}")
-                    }
+                    is UbicacionUi.Lista -> Unit
                     is UbicacionUi.Error -> Text(
                         e.mensaje,
                         color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center
+                    )
+                }
+                if (error == null) {
+                    // La lista va debajo del mapa, con altura fija
+                    ListaLugares(
+                        lugares = lugares,
+                        seleccionado = seleccionado,
+                        onClick = { vm.seleccionar(it) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(220.dp)
                     )
                 }
             }
