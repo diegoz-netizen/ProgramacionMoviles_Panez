@@ -3,11 +3,13 @@ package com.panez.campusgps.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.panez.campusgps.data.GpsApagadoException
 import com.panez.campusgps.data.LugaresRepository
 import com.panez.campusgps.data.UbicacionRepository
 import com.panez.campusgps.model.Lugar
 import com.panez.campusgps.model.LugarConDistancia
 import com.panez.campusgps.model.Posicion
+import com.panez.campusgps.model.TipoError
 import com.panez.campusgps.model.UbicacionUi
 import com.panez.campusgps.util.distanciaMetros
 import com.panez.campusgps.util.formatearDistancia
@@ -41,6 +43,14 @@ class MapaViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun buscar() {
+        // Sin Google Play Services no hay ubicación ni mapa: se avisa sin reintentar
+        if (!ubicacionRepo.playServicesDisponible()) {
+            _estado.value = UbicacionUi.Error(
+                "Este dispositivo no tiene Google Play Services.",
+                TipoError.SIN_PLAY_SERVICES
+            )
+            return
+        }
         _estado.value = UbicacionUi.Buscando
         viewModelScope.launch {
             ubicacionRepo.obtenerPosicion()
@@ -48,12 +58,12 @@ class MapaViewModel(
                     _estado.value = UbicacionUi.Lista(it)
                     actualizarDistancias(it)
                 }
-                .onFailure { _estado.value = UbicacionUi.Error(mensajeDe(it)) }
+                .onFailure { _estado.value = errorDe(it) }
         }
     }
 
     fun permisoDenegado() {
-        _estado.value = UbicacionUi.Error("Sin permiso de ubicación no puedo mostrar dónde estás")
+        _estado.value = UbicacionUi.Error(MENSAJE_SIN_PERMISO, TipoError.SIN_PERMISO)
     }
 
     // Calcula la distancia a cada lugar y publica la lista ordenada de menor a mayor
@@ -71,8 +81,20 @@ class MapaViewModel(
     fun seleccionar(id: Int?) {
         _seleccionado.value = id
     }
-    private fun mensajeDe(e: Throwable): String = when (e) {
-        is SecurityException -> "Falta el permiso de ubicación"
-        else -> e.message ?: "No se pudo obtener la ubicación"
+    // Cada problema tiene su mensaje y su tipo (la pantalla elige el botón según el tipo)
+    private fun errorDe(e: Throwable): UbicacionUi.Error = when (e) {
+        is SecurityException -> UbicacionUi.Error(MENSAJE_SIN_PERMISO, TipoError.SIN_PERMISO)
+        is GpsApagadoException -> UbicacionUi.Error(
+            "No se pudo obtener la ubicación.\nActiva el GPS e intenta de nuevo",
+            TipoError.GPS_APAGADO
+        )
+        else -> UbicacionUi.Error(
+            e.message ?: "No se pudo obtener la ubicación",
+            TipoError.OTRO
+        )
+    }
+
+    private companion object {
+        const val MENSAJE_SIN_PERMISO = "Sin permiso de ubicación no puedo mostrar dónde estás"
     }
 }

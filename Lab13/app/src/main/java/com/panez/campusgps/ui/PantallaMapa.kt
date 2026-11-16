@@ -1,6 +1,9 @@
 package com.panez.campusgps.ui
 
 import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,7 +33,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.panez.campusgps.model.UbicacionUi
@@ -52,6 +54,16 @@ fun PantallaMapa(vm: MapaViewModel) {
 
     fun tienePermiso(permiso: String) =
         ContextCompat.checkSelfPermission(contexto, permiso) == PackageManager.PERMISSION_GRANTED
+
+    // Pantalla de la app en Ajustes, para conceder el permiso a mano
+    fun abrirAjustes() {
+        contexto.startActivity(
+            Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.fromParts("package", contexto.packageName, null)
+            )
+        )
+    }
 
     fun alPulsar() {
         if (tienePermiso(Manifest.permission.ACCESS_FINE_LOCATION) ||
@@ -119,10 +131,11 @@ fun PantallaMapa(vm: MapaViewModel) {
                     )
                     UbicacionUi.Buscando -> Text("Buscando tu ubicación…")
                     is UbicacionUi.Lista -> Unit
-                    is UbicacionUi.Error -> Text(
-                        e.mensaje,
-                        color = MaterialTheme.colorScheme.error,
-                        textAlign = TextAlign.Center
+                    is UbicacionUi.Error -> MensajeError(
+                        error = e,
+                        onAbrirAjustes = { abrirAjustes() },
+                        onReintentar = { alPulsar() },
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
                 if (error == null) {
