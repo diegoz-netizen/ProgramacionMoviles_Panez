@@ -5,6 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.panez.campusgps.data.GpsApagadoException
 import com.panez.campusgps.data.LugaresRepository
+import com.panez.campusgps.data.PasillosRepository
+import com.panez.campusgps.model.Recorrido
+import com.panez.campusgps.model.RedPasillos
+import com.panez.campusgps.util.calcularRecorrido
 import com.panez.campusgps.data.UbicacionRepository
 import com.panez.campusgps.model.Lugar
 import com.panez.campusgps.model.LugarConDistancia
@@ -24,7 +28,8 @@ import kotlinx.coroutines.launch
 
 class MapaViewModel(
     private val ubicacionRepo: UbicacionRepository,
-    private val lugaresRepo: LugaresRepository
+    private val lugaresRepo: LugaresRepository,
+    private val pasillosRepo: PasillosRepository
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow<UbicacionUi>(UbicacionUi.Inicial)
@@ -95,6 +100,53 @@ class MapaViewModel(
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), _lugares.value)
 
+    // ---- Pasillos del campus (grafo para calcular la ruta a pie) ----
+    val red: StateFlow<RedPasillos> = pasillosRepo.red
+
+    // Modo para dibujar los pasillos tocando el mapa
+    private val _modoPasillos = MutableStateFlow(false)
+    val modoPasillos: StateFlow<Boolean> = _modoPasillos.asStateFlow()
+
+    // Último punto dibujado: el siguiente toque se une con él
+    private val _nodoActual = MutableStateFlow<Int?>(null)
+    val nodoActual: StateFlow<Int?> = _nodoActual.asStateFlow()
+
+    fun alternarPasillos() {
+        _modoPasillos.value = !_modoPasillos.value
+        _modoEdicion.value = false
+        _nodoActual.value = null
+        seleccionar(null)
+    }
+
+    /** Tocar un punto ya dibujado: lo une con el anterior (para cerrar cruces) y sigue desde ahí. */
+    fun tocarNodo(id: Int) {
+        _nodoActual.value?.let { if (it != id) pasillosRepo.unir(it, id) }
+        _nodoActual.value = id
+    }
+
+    /** Empieza un pasillo nuevo sin unirlo con el último punto. */
+    fun nuevoTramo() {
+        _nodoActual.value = null
+    }
+
+    fun deshacerPasillo() {
+        pasillosRepo.deshacer()
+        _nodoActual.value = pasillosRepo.red.value.nodos.maxOfOrNull { it.id }
+    }
+
+    fun borrarPasillos() {
+        pasillosRepo.borrarTodo()
+        _nodoActual.value = null
+    }
+
+    // Camino a pie hasta el lugar elegido, por los pasillos (Dijkstra) o en línea recta si no hay red
+    val recorrido: StateFlow<Recorrido?> = combine(ruta, seleccionado, estado, red, lugares) { r, id, est, redActual, lista ->
+        val posicion = (est as? UbicacionUi.Lista)?.posicion
+        val lugar = lista.firstOrNull { it.lugar.id == id }?.lugar
+        if (!r || posicion == null || lugar == null) null
+        else calcularRecorrido(redActual, posicion, Posicion(lugar.latitud, lugar.longitud))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
     // El primero de la lista con distancia calculada; null mientras no hay ubicación
     val masCercano: StateFlow<Lugar?> = lugares
         .map { lista -> lista.firstOrNull { it.metros != null }?.lugar }
@@ -139,6 +191,7 @@ class MapaViewModel(
 
     /** Entra o sale del modo edición. Al entrar se resalta el primer pabellón sin ubicar. */
     fun alternarEdicion() {
+        _modoPasillos.value = false
         val activar = !_modoEdicion.value
         _modoEdicion.value = activar
         if (activar) {
@@ -149,6 +202,11 @@ class MapaViewModel(
 
     /** En modo edición, el toque en el mapa mueve el pabellón resaltado y pasa al siguiente. */
     fun tocarMapa(latitud: Double, longitud: Double) {
+        // Dibujando pasillos: cada toque agrega un punto unido al anterior
+        if (_modoPasillos.value) {
+            _nodoActual.value = pasillosRepo.agregarNodo(latitud, longitud, _nodoActual.value)
+            return
+        }
         // Fuera del modo edición, tocar el mapa cierra la ficha del lugar
         if (!_modoEdicion.value) {
             seleccionar(null)

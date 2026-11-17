@@ -1,5 +1,18 @@
 package com.panez.campusgps.ui
 
+import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Route
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.panez.campusgps.model.Recorrido
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -95,6 +108,10 @@ fun PantallaMapa(vm: MapaViewModel) {
     val seleccionado by vm.seleccionado.collectAsState()
     val masCercano by vm.masCercano.collectAsState()
     val ruta by vm.ruta.collectAsState()
+    val recorrido by vm.recorrido.collectAsState()
+    val red by vm.red.collectAsState()
+    val modoPasillos by vm.modoPasillos.collectAsState()
+    val nodoActual by vm.nodoActual.collectAsState()
 
     val contexto = LocalContext.current
     val lanzador = rememberLauncherForActivityResult(
@@ -172,10 +189,11 @@ fun PantallaMapa(vm: MapaViewModel) {
                             onReintentar = { alPulsar() },
                             modifier = Modifier.padding(bottom = Dimens.md)
                         )
-                        elegido != null && !modoEdicion -> FichaLugar(
+                        elegido != null && !modoEdicion && !modoPasillos -> FichaLugar(
                             item = elegido,
                             esMasCercano = elegido.lugar.id == masCercano?.id,
                             ruta = ruta,
+                            recorrido = recorrido,
                             onRuta = vm::alternarRuta,
                             onUbicar = { alPulsar() },
                             onCerrar = { vm.seleccionar(null) }
@@ -221,7 +239,11 @@ fun PantallaMapa(vm: MapaViewModel) {
                 seleccionado = seleccionado,
                 masCercano = masCercano,
                 modoEdicion = modoEdicion,
-                ruta = ruta,
+                recorrido = recorrido,
+                red = red,
+                modoPasillos = modoPasillos,
+                nodoActual = nodoActual,
+                onTocarNodo = vm::tocarNodo,
                 onTocarMapa = vm::tocarMapa,
                 onTocarMarcador = { vm.seleccionar(it) },
                 contentPadding = PaddingValues(top = Dimens.cabeceraMapa, bottom = alturaHoja),
@@ -238,10 +260,20 @@ fun PantallaMapa(vm: MapaViewModel) {
                 BarraBusqueda(
                     texto = busqueda,
                     onCambiar = vm::buscarTexto,
-                    modoEdicion = modoEdicion,
-                    onEditar = vm::alternarEdicion
+                    editando = modoEdicion || modoPasillos,
+                    onUbicarPabellones = vm::alternarEdicion,
+                    onDibujarPasillos = vm::alternarPasillos,
+                    onTerminar = { if (modoPasillos) vm.alternarPasillos() else vm.alternarEdicion() }
                 )
-                if (modoEdicion) {
+                if (modoPasillos) {
+                    BarraPasillos(
+                        puntos = red.nodos.size,
+                        tramos = red.tramos.size,
+                        onNuevoTramo = vm::nuevoTramo,
+                        onDeshacer = vm::deshacerPasillo,
+                        onBorrarTodo = vm::borrarPasillos
+                    )
+                } else if (modoEdicion) {
                     BarraEdicion(
                         nombre = elegido?.lugar?.nombre ?: "",
                         pendientes = lugares.count { !it.lugar.ubicado },
@@ -283,10 +315,13 @@ private val ORDEN_CATEGORIAS = listOf(
 private fun BarraBusqueda(
     texto: String,
     onCambiar: (String) -> Unit,
-    modoEdicion: Boolean,
-    onEditar: () -> Unit
+    editando: Boolean,
+    onUbicarPabellones: () -> Unit,
+    onDibujarPasillos: () -> Unit,
+    onTerminar: () -> Unit
 ) {
     val colores = MaterialTheme.colorScheme
+    var menuAbierto by remember { mutableStateOf(false) }
     Surface(
         modifier = Modifier.fillMaxWidth().height(Dimens.altoBusqueda),
         shape = MaterialTheme.shapes.extraLarge,
@@ -321,13 +356,33 @@ private fun BarraBusqueda(
                     Icon(Icons.Filled.Close, contentDescription = "Borrar búsqueda")
                 }
             }
-            // Entra o sale del modo para ubicar los pabellones en el mapa
-            IconButton(onClick = onEditar) {
-                Icon(
-                    if (modoEdicion) Icons.Filled.Check else Icons.Filled.EditLocationAlt,
-                    contentDescription = if (modoEdicion) "Terminar de ubicar" else "Ubicar pabellones",
-                    tint = colores.primary
-                )
+            // Herramientas del plano: ubicar pabellones o dibujar pasillos (con el check se termina)
+            Box {
+                IconButton(onClick = { if (editando) onTerminar() else menuAbierto = true }) {
+                    Icon(
+                        if (editando) Icons.Filled.Check else Icons.Filled.EditLocationAlt,
+                        contentDescription = if (editando) "Terminar" else "Editar el plano",
+                        tint = colores.primary
+                    )
+                }
+                DropdownMenu(expanded = menuAbierto, onDismissRequest = { menuAbierto = false }) {
+                    DropdownMenuItem(
+                        text = { Text("Ubicar pabellones") },
+                        leadingIcon = { Icon(Icons.Filled.EditLocationAlt, contentDescription = null) },
+                        onClick = {
+                            menuAbierto = false
+                            onUbicarPabellones()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Dibujar pasillos") },
+                        leadingIcon = { Icon(Icons.Filled.Route, contentDescription = null) },
+                        onClick = {
+                            menuAbierto = false
+                            onDibujarPasillos()
+                        }
+                    )
+                }
             }
         }
     }
@@ -429,12 +484,14 @@ private fun FichaLugar(
     item: LugarConDistancia,
     esMasCercano: Boolean,
     ruta: Boolean,
+    recorrido: Recorrido?,
     onRuta: () -> Unit,
     onUbicar: () -> Unit,
     onCerrar: () -> Unit
 ) {
     val colores = MaterialTheme.colorScheme
-    val metros = item.metros
+    // Con la ruta trazada, la distancia es la del camino por los pasillos (no la línea recta)
+    val metros = recorrido?.metros ?: item.metros
     Column(
         modifier = Modifier.fillMaxWidth().padding(bottom = Dimens.md),
         verticalArrangement = Arrangement.spacedBy(Dimens.lg)
@@ -463,7 +520,11 @@ private fun FichaLugar(
             DatoLugar(
                 icono = Icons.Filled.Straighten,
                 valor = metros?.let(::formatearDistancia) ?: "—",
-                etiqueta = "Distancia",
+                etiqueta = when {
+                    recorrido == null -> "En línea recta"
+                    recorrido.porPasillos -> "Por los pasillos"
+                    else -> "Sin pasillos aún"
+                },
                 modifier = Modifier.weight(1f)
             )
             DatoLugar(
@@ -557,5 +618,65 @@ private fun BarraEdicion(nombre: String, pendientes: Int, onAnterior: () -> Unit
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Siguiente")
             }
         }
+    }
+}
+
+/** Franja flotante para dibujar los pasillos: cuántos hay y las acciones para corregir. */
+@Composable
+private fun BarraPasillos(
+    puntos: Int,
+    tramos: Int,
+    onNuevoTramo: () -> Unit,
+    onDeshacer: () -> Unit,
+    onBorrarTodo: () -> Unit
+) {
+    var confirmar by remember { mutableStateOf(false) }
+    Surface(
+        color = MaterialTheme.colorScheme.tertiaryContainer,
+        shape = MaterialTheme.shapes.large,
+        shadowElevation = Dimens.xs,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(Modifier.padding(Dimens.md), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+            Text("Toca el mapa por donde se camina", style = MaterialTheme.typography.titleSmall)
+            Text(
+                "Cada toque se une al punto anterior. Toca un punto existente para unir un cruce. " +
+                    "$puntos puntos · $tramos tramos",
+                style = MaterialTheme.typography.bodySmall
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                AssistChip(
+                    onClick = onNuevoTramo,
+                    label = { Text("Nuevo tramo") },
+                    leadingIcon = { Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(Dimens.lg)) }
+                )
+                AssistChip(
+                    onClick = onDeshacer,
+                    enabled = puntos > 0,
+                    label = { Text("Deshacer") },
+                    leadingIcon = { Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = null, modifier = Modifier.size(Dimens.lg)) }
+                )
+                AssistChip(
+                    onClick = { confirmar = true },
+                    enabled = puntos > 0,
+                    label = { Text("Borrar") },
+                    leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null, modifier = Modifier.size(Dimens.lg)) }
+                )
+            }
+        }
+    }
+    if (confirmar) {
+        AlertDialog(
+            onDismissRequest = { confirmar = false },
+            title = { Text("¿Borrar todos los pasillos?") },
+            text = { Text("Se perderán los $puntos puntos dibujados. No se puede deshacer.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmar = false
+                    onBorrarTodo()
+                }) { Text("Borrar") }
+            },
+            dismissButton = { TextButton(onClick = { confirmar = false }) { Text("Cancelar") } }
+        )
     }
 }

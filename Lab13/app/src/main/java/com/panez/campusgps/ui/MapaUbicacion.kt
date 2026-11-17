@@ -1,5 +1,8 @@
 package com.panez.campusgps.ui
 
+import com.panez.campusgps.model.RedPasillos
+import com.panez.campusgps.model.Recorrido
+import com.google.android.gms.maps.model.JointType
 import androidx.compose.foundation.layout.PaddingValues
 import com.google.android.gms.maps.model.Gap
 import com.google.android.gms.maps.model.Dot
@@ -42,7 +45,11 @@ fun MapaUbicacion(
     modoEdicion: Boolean = false,
     onTocarMapa: (latitud: Double, longitud: Double) -> Unit = { _, _ -> },
     onTocarMarcador: (id: Int) -> Unit = {},
-    ruta: Boolean = false,
+    recorrido: Recorrido? = null,
+    red: RedPasillos = RedPasillos(),
+    modoPasillos: Boolean = false,
+    nodoActual: Int? = null,
+    onTocarNodo: (id: Int) -> Unit = {},
     contentPadding: PaddingValues = PaddingValues()
 ) {
     val colores = MaterialTheme.colorScheme
@@ -64,15 +71,14 @@ fun MapaUbicacion(
     val posicion = (estado as? UbicacionUi.Lista)?.posicion
     val elegido = lugares.firstOrNull { it.lugar.id == seleccionado }?.lugar
 
-    // Al elegir un lugar la cámara viaja hasta él; con la ruta, encuadra al usuario y al lugar
-    LaunchedEffect(seleccionado, ruta) {
+    // Al elegir un lugar la cámara viaja hasta él; con la ruta, encuadra todo el recorrido
+    LaunchedEffect(seleccionado, recorrido != null) {
         val lugar = elegido ?: return@LaunchedEffect
         val destino = LatLng(lugar.latitud, lugar.longitud)
-        if (ruta && posicion != null) {
-            val limites = LatLngBounds.builder()
-                .include(destino)
-                .include(LatLng(posicion.latitud, posicion.longitud))
-                .build()
+        if (recorrido != null) {
+            val limites = LatLngBounds.builder().apply {
+                recorrido.puntos.forEach { include(LatLng(it.latitud, it.longitud)) }
+            }.build()
             camara.animate(CameraUpdateFactory.newLatLngBounds(limites, MARGEN_RUTA))
             // Si están muy cerca, no acercar de más (se perdería de vista el campus)
             if (camara.position.zoom > ZOOM_MAXIMO_RUTA) {
@@ -112,15 +118,46 @@ fun MapaUbicacion(
                 anchor = Offset(0.5f, 0.5f),
                 zIndex = 3f
             )
-            // Ruta punteada en línea recta hasta el lugar elegido
-            if (ruta && elegido != null) {
+        }
+        // Ruta a pie: sigue los pasillos (o recta si todavía no hay red dibujada)
+        if (recorrido != null) {
+            Polyline(
+                points = recorrido.puntos.map { LatLng(it.latitud, it.longitud) },
+                color = AmbarSeleccion,
+                width = 12f,
+                pattern = listOf(Dot(), Gap(16f)),
+                jointType = JointType.ROUND,
+                zIndex = 2f
+            )
+        }
+        // Dibujando pasillos: se ven los tramos y los puntos (el último, resaltado)
+        if (modoPasillos) {
+            val porId = red.nodos.associateBy { it.id }
+            red.tramos.forEach { (a, b) ->
+                val na = porId[a] ?: return@forEach
+                val nb = porId[b] ?: return@forEach
                 Polyline(
-                    points = listOf(aqui, LatLng(elegido.latitud, elegido.longitud)),
-                    color = AmbarSeleccion,
-                    width = 12f,
-                    pattern = listOf(Dot(), Gap(16f)),
-                    zIndex = 2f
+                    points = listOf(LatLng(na.latitud, na.longitud), LatLng(nb.latitud, nb.longitud)),
+                    color = colores.tertiaryContainer,
+                    width = 10f,
+                    zIndex = 3f
                 )
+            }
+            val punto = remember(densidad) { puntoUbicacion(colores.tertiary.toArgb(), densidad) }
+            val puntoActual = remember(densidad) { puntoUbicacion(AmbarSeleccion.toArgb(), densidad) }
+            red.nodos.forEach { nodo ->
+                key("nodo_${nodo.id}") {
+                    Marker(
+                        state = rememberUpdatedMarkerState(position = LatLng(nodo.latitud, nodo.longitud)),
+                        icon = if (nodo.id == nodoActual) puntoActual else punto,
+                        anchor = Offset(0.5f, 0.5f),
+                        zIndex = 4f,
+                        onClick = {
+                            onTocarNodo(nodo.id)
+                            true
+                        }
+                    )
+                }
             }
         }
         // Plano del campus: cada lugar es un bloque de color con su etiqueta encima (solo dibuja lo que recibe)
@@ -158,9 +195,11 @@ fun MapaUbicacion(
                     icon = etiqueta,
                     anchor = Offset(0.5f, 0.5f),
                     alpha = if (modoEdicion && !resaltado) 0.6f else 1f,
-                    // Tocar una etiqueta abre su ficha (en modo edición, la resalta para moverla)
+                    // Tocar una etiqueta abre su ficha (en modo edición, la resalta para moverla).
+                    // Dibujando pasillos, pone un punto en ese lugar para conectarlo a la red
                     onClick = {
-                        onTocarMarcador(lugar.id)
+                        if (modoPasillos) onTocarMapa(lugar.latitud, lugar.longitud)
+                        else onTocarMarcador(lugar.id)
                         true
                     },
                     zIndex = if (resaltado) 2f else 1f

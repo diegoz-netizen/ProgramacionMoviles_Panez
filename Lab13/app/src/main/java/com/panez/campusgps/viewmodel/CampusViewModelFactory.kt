@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.panez.campusgps.data.LugaresRepositoryTecsup
+import com.panez.campusgps.data.PasillosRepositoryLocal
 import com.panez.campusgps.data.UbicacionRepositoryGoogle
 
 // El Context se queda aquí: el ViewModel solo recibe las interfaces
@@ -14,7 +15,8 @@ class CampusViewModelFactory(private val context: Context) : ViewModelProvider.F
         if (modelClass.isAssignableFrom(MapaViewModel::class.java)) {
             return MapaViewModel(
                 ubicacionRepo = UbicacionRepositoryGoogle(context.applicationContext),
-                lugaresRepo = LugaresRepositoryTecsup(context.applicationContext)
+                lugaresRepo = LugaresRepositoryTecsup(context.applicationContext),
+                pasillosRepo = PasillosRepositoryLocal(context.applicationContext)
             ) as T
         }
         throw IllegalArgumentException("ViewModel desconocido: ${modelClass.name}")
