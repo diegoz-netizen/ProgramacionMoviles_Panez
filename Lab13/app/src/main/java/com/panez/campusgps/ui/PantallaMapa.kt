@@ -1,5 +1,7 @@
 package com.panez.campusgps.ui
 
+import com.panez.campusgps.ui.components.BarraTecsup
+import com.panez.campusgps.ui.theme.Dimens
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.platform.LocalConfiguration
 import android.content.res.Configuration
@@ -33,8 +35,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -95,9 +95,9 @@ fun PantallaMapa(vm: MapaViewModel) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("CampusGPS · Tecsup", fontWeight = FontWeight.Bold) },
-                actions = {
+            BarraTecsup(
+                titulo = "CampusGPS · Tecsup",
+                acciones = {
                     // Lápiz: entra o sale del modo para ubicar los pabellones en el mapa
                     IconButton(onClick = { vm.alternarEdicion() }) {
                         Icon(
@@ -106,11 +106,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                }
             )
         }
     ) { padding ->
@@ -148,9 +144,9 @@ fun PantallaMapa(vm: MapaViewModel) {
         // Botones, mensajes y lista. listaLlena: la lista ocupa todo el alto que sobra (modo horizontal)
         val panel: @Composable (Modifier, Boolean) -> Unit = { m, listaLlena ->
             Column(
-                modifier = m.padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier = m.padding(horizontal = Dimens.lg, vertical = Dimens.md),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(Dimens.sm)
             ) {
                 Button(onClick = { alPulsar() }, enabled = estado !is UbicacionUi.Buscando) {
                     Text("Obtener mi ubicación")
@@ -166,7 +162,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                         error = e,
                         onAbrirAjustes = { abrirAjustes() },
                         onReintentar = { alPulsar() },
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = Dimens.sm)
                     )
                 }
                 if (error == null) {
@@ -202,7 +198,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                         onClick = { vm.seleccionar(it) },
                         masCercanoId = masCercano?.id,
                         modifier = if (listaLlena) Modifier.fillMaxWidth().weight(1f)
-                        else Modifier.fillMaxWidth().height(220.dp)
+                        else Modifier.fillMaxWidth().height(Dimens.altoLista)
                     )
                 }
             }
@@ -237,7 +233,7 @@ fun PantallaMapa(vm: MapaViewModel) {
 private fun BarraEdicion(nombre: String, pendientes: Int, onAnterior: () -> Unit, onSiguiente: () -> Unit) {
     Surface(color = MaterialTheme.colorScheme.tertiaryContainer, modifier = Modifier.fillMaxWidth()) {
         Row(
-            Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+            Modifier.padding(horizontal = Dimens.sm, vertical = Dimens.sm),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onAnterior) {
@@ -245,7 +241,7 @@ private fun BarraEdicion(nombre: String, pendientes: Int, onAnterior: () -> Unit
             }
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Toca en el mapa dónde está:", style = MaterialTheme.typography.bodySmall)
-                Text(nombre, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(nombre, style = MaterialTheme.typography.titleMedium)
                 Text(
                     if (pendientes == 0) "Todos los pabellones están ubicados" else "Faltan $pendientes por ubicar",
                     style = MaterialTheme.typography.bodySmall

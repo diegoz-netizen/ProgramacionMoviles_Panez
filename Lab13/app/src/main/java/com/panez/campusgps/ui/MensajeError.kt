@@ -1,11 +1,11 @@
 package com.panez.campusgps.ui
 
+import com.panez.campusgps.ui.theme.Dimens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -30,17 +30,17 @@ fun MensajeError(
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(Dimens.lg)
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.errorContainer,
-            shape = RoundedCornerShape(12.dp)
+            shape = MaterialTheme.shapes.medium
         ) {
             Text(
                 text = error.mensaje,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.md),
+                color = MaterialTheme.colorScheme.onErrorContainer,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium
             )

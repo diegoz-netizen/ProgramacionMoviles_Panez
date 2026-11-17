@@ -1,5 +1,6 @@
 package com.panez.campusgps.ui
 
+import com.panez.campusgps.ui.theme.AmbarSeleccion
 import androidx.compose.ui.graphics.Color
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.MapType
@@ -106,9 +107,9 @@ fun MapaUbicacion(
                     Circle(
                         center = LatLng(item.lugar.latitud, item.lugar.longitud),
                         radius = 18.0,
-                        strokeColor = Color(0xFFFF9800),
+                        strokeColor = AmbarSeleccion,
                         strokeWidth = 4f,
-                        fillColor = Color(0x44FF9800)
+                        fillColor = AmbarSeleccion.copy(alpha = 0.27f)
                     )
                 }
             }

@@ -3,19 +3,15 @@ package com.panez.campusgps.ui
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -23,10 +19,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.panez.campusgps.model.LugarConDistancia
-import com.panez.campusgps.ui.theme.VerdeCercano
+import com.panez.campusgps.ui.components.IconoCategoria
+import com.panez.campusgps.ui.components.InsigniaDistancia
+import com.panez.campusgps.ui.theme.Dimens
 import com.panez.campusgps.util.formatearDistancia
 
 // Solo dibuja lo que recibe: no conoce el ViewModel
@@ -47,7 +44,7 @@ fun ListaLugares(
     LazyColumn(
         modifier = modifier,
         state = estadoLista,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalArrangement = Arrangement.spacedBy(Dimens.sm)
     ) {
         items(lugares, key = { it.lugar.id }) { item ->
             TarjetaLugar(
@@ -71,39 +68,29 @@ private fun TarjetaLugar(
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
-            containerColor = if (seleccionada) colores.primaryContainer else colores.surfaceContainerHigh
+            containerColor = if (seleccionada) colores.tertiaryContainer else colores.surfaceContainerLow
         ),
-        border = if (seleccionada) BorderStroke(1.5.dp, colores.primary) else null
+        border = BorderStroke(1.dp, if (seleccionada) colores.tertiary else colores.outlineVariant)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = Dimens.md, vertical = Dimens.sm),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Punto de color: el mismo del marcador (verde el más cercano, azul los demás)
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .background(if (esMasCercano) VerdeCercano else colores.primary, CircleShape)
-            )
-            Spacer(Modifier.width(12.dp))
+            IconoCategoria(item.lugar.categoria, resaltado = seleccionada)
+            Spacer(Modifier.width(Dimens.md))
             Column(modifier = Modifier.weight(1f)) {
+                Text(item.lugar.nombre, style = MaterialTheme.typography.titleMedium)
                 Text(
-                    item.lugar.nombre,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    item.lugar.categoria,
+                    if (esMasCercano) "${item.lugar.categoria} · el más cercano" else item.lugar.categoria,
                     style = MaterialTheme.typography.bodySmall,
                     color = colores.onSurfaceVariant
                 )
             }
-            Text(
-                text = item.metros?.let(::formatearDistancia) ?: "Sin calcular",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = colores.primary
+            InsigniaDistancia(
+                texto = item.metros?.let(::formatearDistancia) ?: "—",
+                esMasCercano = esMasCercano
             )
         }
     }
