@@ -17,4 +17,9 @@ object Dimens {
     val logoLogin = 120.dp
     val altoBoton = 52.dp
     val altoLista = 220.dp
+    val altoBusqueda = 56.dp
+    val hojaRecogida = 300.dp
+    val hojaHorizontal = 96.dp
+    val cabeceraMapa = 128.dp
+    val insigniaGrande = 64.dp
 }

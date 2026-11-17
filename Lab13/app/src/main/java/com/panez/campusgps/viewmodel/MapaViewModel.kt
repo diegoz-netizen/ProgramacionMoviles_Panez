@@ -63,9 +63,36 @@ class MapaViewModel(
         _filtro.value = categoria
     }
 
-    // Lo que se dibuja en el mapa y en la lista: los lugares de la categoría elegida
-    val visibles: StateFlow<List<LugarConDistancia>> = combine(lugares, filtro) { lista, cat ->
-        if (cat == null) lista else lista.filter { it.lugar.categoria == cat }
+    // Texto de la barra de búsqueda
+    private val _busqueda = MutableStateFlow("")
+    val busqueda: StateFlow<String> = _busqueda.asStateFlow()
+
+    fun buscarTexto(texto: String) {
+        _busqueda.value = texto
+    }
+
+    // Ruta punteada desde el usuario hasta el lugar elegido
+    private val _ruta = MutableStateFlow(false)
+    val ruta: StateFlow<Boolean> = _ruta.asStateFlow()
+
+    fun alternarRuta() {
+        _ruta.value = !_ruta.value
+    }
+
+    /** "Llévame": elige el lugar y traza la ruta de una vez. */
+    fun llevarA(id: Int) {
+        _seleccionado.value = id
+        _ruta.value = true
+    }
+
+    // Lo que se dibuja en el mapa y en la lista: categoría elegida y texto buscado
+    val visibles: StateFlow<List<LugarConDistancia>> = combine(lugares, filtro, busqueda) { lista, cat, texto ->
+        val q = texto.trim()
+        lista.filter { item ->
+            (cat == null || item.lugar.categoria == cat) &&
+                (q.isEmpty() || item.lugar.nombre.contains(q, ignoreCase = true) ||
+                    "P${item.lugar.id}".equals(q, ignoreCase = true))
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), _lugares.value)
 
     // El primero de la lista con distancia calculada; null mientras no hay ubicación
@@ -122,7 +149,11 @@ class MapaViewModel(
 
     /** En modo edición, el toque en el mapa mueve el pabellón resaltado y pasa al siguiente. */
     fun tocarMapa(latitud: Double, longitud: Double) {
-        if (!_modoEdicion.value) return
+        // Fuera del modo edición, tocar el mapa cierra la ficha del lugar
+        if (!_modoEdicion.value) {
+            seleccionar(null)
+            return
+        }
         val id = _seleccionado.value ?: return
         lugaresRepo.moverLugar(id, latitud, longitud)
         siguiente()
@@ -140,6 +171,7 @@ class MapaViewModel(
 
     // El lugar tocado en la lista (o null para ninguno)
     fun seleccionar(id: Int?) {
+        if (id != _seleccionado.value) _ruta.value = false
         _seleccionado.value = id
     }
     // Cada problema tiene su mensaje y su tipo (la pantalla elige el botón según el tipo)

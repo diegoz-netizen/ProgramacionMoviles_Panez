@@ -1,5 +1,12 @@
 package com.panez.campusgps.ui
 
+import androidx.compose.foundation.layout.PaddingValues
+import com.google.android.gms.maps.model.Gap
+import com.google.android.gms.maps.model.Dot
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.Circle
 import com.panez.campusgps.ui.theme.VerdeCercano
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
@@ -34,7 +41,9 @@ fun MapaUbicacion(
     modifier: Modifier = Modifier,
     modoEdicion: Boolean = false,
     onTocarMapa: (latitud: Double, longitud: Double) -> Unit = { _, _ -> },
-    onTocarMarcador: (id: Int) -> Unit = {}
+    onTocarMarcador: (id: Int) -> Unit = {},
+    ruta: Boolean = false,
+    contentPadding: PaddingValues = PaddingValues()
 ) {
     val colores = MaterialTheme.colorScheme
     val densidad = LocalDensity.current.density
@@ -48,14 +57,30 @@ fun MapaUbicacion(
     LaunchedEffect(estado) {
         if (estado is UbicacionUi.Lista) {
             val aqui = LatLng(estado.posicion.latitud, estado.posicion.longitud)
-            camara.animate(CameraUpdateFactory.newLatLngZoom(aqui, 16f))
+            camara.animate(CameraUpdateFactory.newLatLngZoom(aqui, 17.5f))
         }
     }
 
-    // Al tocar un lugar de la lista, la cámara viaja hasta él
-    LaunchedEffect(seleccionado) {
-        val lugar = lugares.firstOrNull { it.lugar.id == seleccionado }?.lugar ?: return@LaunchedEffect
-        camara.animate(CameraUpdateFactory.newLatLngZoom(LatLng(lugar.latitud, lugar.longitud), 17f))
+    val posicion = (estado as? UbicacionUi.Lista)?.posicion
+    val elegido = lugares.firstOrNull { it.lugar.id == seleccionado }?.lugar
+
+    // Al elegir un lugar la cámara viaja hasta él; con la ruta, encuadra al usuario y al lugar
+    LaunchedEffect(seleccionado, ruta) {
+        val lugar = elegido ?: return@LaunchedEffect
+        val destino = LatLng(lugar.latitud, lugar.longitud)
+        if (ruta && posicion != null) {
+            val limites = LatLngBounds.builder()
+                .include(destino)
+                .include(LatLng(posicion.latitud, posicion.longitud))
+                .build()
+            camara.animate(CameraUpdateFactory.newLatLngBounds(limites, MARGEN_RUTA))
+            // Si están muy cerca, no acercar de más (se perdería de vista el campus)
+            if (camara.position.zoom > ZOOM_MAXIMO_RUTA) {
+                camara.animate(CameraUpdateFactory.zoomTo(ZOOM_MAXIMO_RUTA))
+            }
+        } else {
+            camara.animate(CameraUpdateFactory.newLatLngZoom(destino, 18f))
+        }
     }
 
     GoogleMap(
@@ -63,17 +88,40 @@ fun MapaUbicacion(
         cameraPositionState = camara,
         // Satélite con nombres de calles: se ven los techos de los pabellones
         properties = MapProperties(mapType = MapType.HYBRID),
+        // Sin los botones de Google: la app trae su propio botón de ubicación
+        uiSettings = MapUiSettings(zoomControlsEnabled = false, myLocationButtonEnabled = false, mapToolbarEnabled = false),
+        // Deja libre lo que tapan la búsqueda (arriba) y la hoja (abajo)
+        contentPadding = contentPadding,
         onMapClick = { onTocarMapa(it.latitude, it.longitude) }
     ) {
-        // Marcador propio: rojo (el de por defecto)
-        if (estado is UbicacionUi.Lista) {
-            Marker(
-                state = rememberUpdatedMarkerState(
-                    position = LatLng(estado.posicion.latitud, estado.posicion.longitud)
-                ),
-                title = "Estás aquí",
-                snippet = "Latitud ${estado.posicion.latitud}, longitud ${estado.posicion.longitud}"
+        // Tu posición: punto azul con un halo, como en las apps de mapas
+        if (posicion != null) {
+            val aqui = LatLng(posicion.latitud, posicion.longitud)
+            Circle(
+                center = aqui,
+                radius = 10.0,
+                fillColor = colores.primary.copy(alpha = 0.18f),
+                strokeColor = colores.primary.copy(alpha = 0.4f),
+                strokeWidth = 2f
             )
+            val punto = remember(densidad) { puntoUbicacion(colores.primary.toArgb(), densidad) }
+            Marker(
+                state = rememberUpdatedMarkerState(position = aqui),
+                title = "Estás aquí",
+                icon = punto,
+                anchor = Offset(0.5f, 0.5f),
+                zIndex = 3f
+            )
+            // Ruta punteada en línea recta hasta el lugar elegido
+            if (ruta && elegido != null) {
+                Polyline(
+                    points = listOf(aqui, LatLng(elegido.latitud, elegido.longitud)),
+                    color = AmbarSeleccion,
+                    width = 12f,
+                    pattern = listOf(Dot(), Gap(16f)),
+                    zIndex = 2f
+                )
+            }
         }
         // Plano del campus: cada lugar es un bloque de color con su etiqueta encima (solo dibuja lo que recibe)
         lugares.forEach { item ->
@@ -95,10 +143,6 @@ fun MapaUbicacion(
                     zIndex = if (resaltado) 1f else 0f
                 )
                 val marcador = rememberUpdatedMarkerState(position = LatLng(lugar.latitud, lugar.longitud))
-                // El lugar seleccionado muestra su nombre en el mapa
-                LaunchedEffect(seleccionado) {
-                    if (seleccionado == lugar.id) marcador.showInfoWindow()
-                }
                 val etiqueta = remember(lugar.id, color, densidad) {
                     etiquetaPabellon(
                         textoEtiqueta(lugar.id, lugar.nombre, lugar.categoria),
@@ -114,12 +158,10 @@ fun MapaUbicacion(
                     icon = etiqueta,
                     anchor = Offset(0.5f, 0.5f),
                     alpha = if (modoEdicion && !resaltado) 0.6f else 1f,
-                    // En modo edición, tocar una etiqueta la resalta para volver a ubicarla
+                    // Tocar una etiqueta abre su ficha (en modo edición, la resalta para moverla)
                     onClick = {
-                        if (modoEdicion) {
-                            onTocarMarcador(lugar.id)
-                            true
-                        } else false
+                        onTocarMarcador(lugar.id)
+                        true
                     },
                     zIndex = if (resaltado) 2f else 1f
                 )
@@ -131,6 +173,8 @@ fun MapaUbicacion(
 // Centro aproximado del campus de Tecsup Lima (Santa Anita)
 private const val TECSUP_LAT = -12.0440
 private const val TECSUP_LNG = -76.9528
+private const val MARGEN_RUTA = 160
+private const val ZOOM_MAXIMO_RUTA = 18.5f
 
 /**
  * Rectángulo aproximado de cada lugar alrededor de su coordenada (no es el contorno real del edificio).

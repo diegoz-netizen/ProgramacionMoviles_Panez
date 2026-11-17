@@ -43,3 +43,24 @@ fun textoEtiqueta(id: Int, nombre: String, categoria: String): String = when (ca
     "Deportes" -> "Canchas"
     else -> nombre.substringBefore(" ")
 }
+
+/** Punto azul de "estás aquí": círculo de color con borde blanco. */
+fun puntoUbicacion(colorPunto: Int, densidad: Float): BitmapDescriptor {
+    val lado = (22f * densidad).toInt()
+    val bitmap = Bitmap.createBitmap(lado, lado, Bitmap.Config.ARGB_8888)
+    val lienzo = Canvas(bitmap)
+    val centro = lado / 2f
+    val pincel = Paint(Paint.ANTI_ALIAS_FLAG)
+    pincel.color = android.graphics.Color.WHITE
+    lienzo.drawCircle(centro, centro, centro - 1f, pincel)
+    pincel.color = colorPunto
+    lienzo.drawCircle(centro, centro, centro - 4f * densidad, pincel)
+    return BitmapDescriptorFactory.fromBitmap(bitmap)
+}
+
+/** Para qué sirve cada tipo de lugar (texto de la ficha). */
+fun descripcionDe(categoria: String): String = when (categoria) {
+    "Pabellón" -> "Aulas y laboratorios"
+    "Deportes" -> "Canchas deportivas y zona de recreación"
+    else -> "Informes, admisión y acceso principal"
+}
