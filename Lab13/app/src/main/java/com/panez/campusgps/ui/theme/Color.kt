@@ -58,3 +58,9 @@ val ContenedorMasAltoOscuro = Color(0xFF30363A)
 val VerdeCercano = Color(0xFF2E9E44)
 /** Ámbar del pabellón seleccionado en el plano. */
 val AmbarSeleccion = Color(0xFFFFA000)
+
+// ---- Marca Tecsup (iguales en tema claro y oscuro: splash y login) ----
+/** Azul del fondo de marca. */
+val AzulMarca = Color(0xFF00658E)
+/** Blanco detrás del logo (el logo tiene fondo blanco) y textos sobre el azul de marca. */
+val BlancoMarca = Color(0xFFFFFFFF)
