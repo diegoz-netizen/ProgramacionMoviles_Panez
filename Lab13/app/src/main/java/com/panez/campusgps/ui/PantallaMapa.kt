@@ -1,5 +1,14 @@
 package com.panez.campusgps.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material3.FilterChip
+import androidx.compose.ui.draw.clip
+import com.panez.campusgps.ui.components.iconoDe
 import com.panez.campusgps.ui.components.BarraTecsup
 import com.panez.campusgps.ui.theme.Dimens
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -111,6 +120,8 @@ fun PantallaMapa(vm: MapaViewModel) {
         }
     ) { padding ->
         val lugares by vm.lugares.collectAsState()
+        val visibles by vm.visibles.collectAsState()
+        val filtro by vm.filtro.collectAsState()
         val seleccionado by vm.seleccionado.collectAsState()
         val masCercano by vm.masCercano.collectAsState()
 
@@ -121,7 +132,8 @@ fun PantallaMapa(vm: MapaViewModel) {
         val mapa: @Composable (Modifier) -> Unit = { m ->
             MapaUbicacion(
                 estado = estado,
-                lugares = lugares,
+                // En modo edición se ven todos, para poder ubicar cualquiera
+                lugares = if (modoEdicion) lugares else visibles,
                 seleccionado = seleccionado,
                 masCercano = masCercano,
                 modoEdicion = modoEdicion,
@@ -143,8 +155,9 @@ fun PantallaMapa(vm: MapaViewModel) {
         }
         // Botones, mensajes y lista. listaLlena: la lista ocupa todo el alto que sobra (modo horizontal)
         val panel: @Composable (Modifier, Boolean) -> Unit = { m, listaLlena ->
+          HojaInferior(m) {
             Column(
-                modifier = m.padding(horizontal = Dimens.lg, vertical = Dimens.md),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.lg, vertical = Dimens.sm),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(Dimens.sm)
             ) {
@@ -191,9 +204,10 @@ fun PantallaMapa(vm: MapaViewModel) {
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
+                    FiltrosCategoria(filtro, vm::filtrar)
                     // La lista va debajo del mapa, con altura fija
                     ListaLugares(
-                        lugares = lugares,
+                        lugares = visibles,
                         seleccionado = seleccionado,
                         onClick = { vm.seleccionar(it) },
                         masCercanoId = masCercano?.id,
@@ -202,6 +216,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                     )
                 }
             }
+          }
         }
 
         if (horizontal && error == null) {
@@ -250,6 +265,49 @@ private fun BarraEdicion(nombre: String, pendientes: Int, onAnterior: () -> Unit
             IconButton(onClick = onSiguiente) {
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Siguiente")
             }
+        }
+    }
+}
+
+/** Panel con forma de hoja inferior: esquinas de arriba redondeadas y una agarradera. */
+@Composable
+private fun HojaInferior(modifier: Modifier, contenido: @Composable () -> Unit) {
+    Surface(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.extraLarge.copy(bottomStart = CornerSize(0), bottomEnd = CornerSize(0)),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        tonalElevation = Dimens.xs,
+        shadowElevation = Dimens.xs
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(
+                Modifier
+                    .padding(top = Dimens.sm)
+                    .size(width = Dimens.xxl, height = Dimens.xs)
+                    .clip(MaterialTheme.shapes.extraSmall)
+                    .background(MaterialTheme.colorScheme.outlineVariant)
+            )
+            contenido()
+        }
+    }
+}
+
+/** Chips para ver solo pabellones, deportes o servicios. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FiltrosCategoria(filtro: String?, onFiltrar: (String?) -> Unit) {
+    val opciones = listOf(null to "Todos", "Pabellón" to "Pabellones", "Deportes" to "Deportes", "Servicios" to "Servicios")
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+    ) {
+        opciones.forEach { (categoria, texto) ->
+            FilterChip(
+                selected = filtro == categoria,
+                onClick = { onFiltrar(categoria) },
+                label = { Text(texto) },
+                leadingIcon = categoria?.let { { Icon(iconoDe(it), contentDescription = null, modifier = Modifier.size(Dimens.lg)) } }
+            )
         }
     }
 }

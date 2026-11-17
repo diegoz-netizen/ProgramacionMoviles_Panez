@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -53,6 +54,19 @@ class MapaViewModel(
             }
         }
     }
+
+    // Filtro de la hoja inferior: null = todos; si no, "Pabellón", "Deportes" o "Servicios"
+    private val _filtro = MutableStateFlow<String?>(null)
+    val filtro: StateFlow<String?> = _filtro.asStateFlow()
+
+    fun filtrar(categoria: String?) {
+        _filtro.value = categoria
+    }
+
+    // Lo que se dibuja en el mapa y en la lista: los lugares de la categoría elegida
+    val visibles: StateFlow<List<LugarConDistancia>> = combine(lugares, filtro) { lista, cat ->
+        if (cat == null) lista else lista.filter { it.lugar.categoria == cat }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), _lugares.value)
 
     // El primero de la lista con distancia calculada; null mientras no hay ubicación
     val masCercano: StateFlow<Lugar?> = lugares
