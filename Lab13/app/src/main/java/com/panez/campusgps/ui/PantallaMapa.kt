@@ -1,5 +1,17 @@
 package com.panez.campusgps.ui
 
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Surface
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.Icons
 import android.Manifest
 import android.content.Intent
 import android.net.Uri
@@ -43,6 +55,7 @@ import com.panez.campusgps.viewmodel.MapaViewModel
 @Composable
 fun PantallaMapa(vm: MapaViewModel) {
     val estado by vm.estado.collectAsState()
+    val modoEdicion by vm.modoEdicion.collectAsState()
 
     val contexto = LocalContext.current
     val lanzador = rememberLauncherForActivityResult(
@@ -83,7 +96,17 @@ fun PantallaMapa(vm: MapaViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("CampusGPS", fontWeight = FontWeight.Bold) },
+                title = { Text("CampusGPS · Tecsup", fontWeight = FontWeight.Bold) },
+                actions = {
+                    // Lápiz: entra o sale del modo para ubicar los pabellones en el mapa
+                    IconButton(onClick = { vm.alternarEdicion() }) {
+                        Icon(
+                            if (modoEdicion) Icons.Filled.Check else Icons.Filled.Edit,
+                            contentDescription = if (modoEdicion) "Terminar de ubicar" else "Ubicar pabellones",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -95,29 +118,37 @@ fun PantallaMapa(vm: MapaViewModel) {
         val seleccionado by vm.seleccionado.collectAsState()
         val masCercano by vm.masCercano.collectAsState()
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            val error = estado as? UbicacionUi.Error
-            if (error == null) {
-                // El mapa ocupa el espacio libre de arriba
-                MapaUbicacion(
-                    estado = estado,
-                    lugares = lugares,
-                    seleccionado = seleccionado,
-                    masCercano = masCercano,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
+        val error = estado as? UbicacionUi.Error
+        // En horizontal el mapa y el panel van lado a lado (si no, el mapa se quedaba sin espacio)
+        val horizontal = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+        val mapa: @Composable (Modifier) -> Unit = { m ->
+            MapaUbicacion(
+                estado = estado,
+                lugares = lugares,
+                seleccionado = seleccionado,
+                masCercano = masCercano,
+                modoEdicion = modoEdicion,
+                onTocarMapa = vm::tocarMapa,
+                onTocarMarcador = { vm.seleccionar(it) },
+                modifier = m
+            )
+        }
+        val barraEdicion: @Composable () -> Unit = {
+            if (modoEdicion) {
+                val actual = lugares.firstOrNull { it.lugar.id == seleccionado }?.lugar
+                BarraEdicion(
+                    nombre = actual?.nombre ?: "",
+                    pendientes = lugares.count { !it.lugar.ubicado },
+                    onAnterior = vm::anterior,
+                    onSiguiente = vm::siguiente
                 )
             }
+        }
+        // Botones, mensajes y lista. listaLlena: la lista ocupa todo el alto que sobra (modo horizontal)
+        val panel: @Composable (Modifier, Boolean) -> Unit = { m, listaLlena ->
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier = m.padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -170,11 +201,58 @@ fun PantallaMapa(vm: MapaViewModel) {
                         seleccionado = seleccionado,
                         onClick = { vm.seleccionar(it) },
                         masCercanoId = masCercano?.id,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(220.dp)
+                        modifier = if (listaLlena) Modifier.fillMaxWidth().weight(1f)
+                        else Modifier.fillMaxWidth().height(220.dp)
                     )
                 }
+            }
+        }
+
+        if (horizontal && error == null) {
+            Row(Modifier.fillMaxSize().padding(padding)) {
+                mapa(Modifier.weight(1f).fillMaxHeight())
+                Column(Modifier.weight(1f).fillMaxHeight()) {
+                    barraEdicion()
+                    panel(Modifier.fillMaxWidth().weight(1f), true)
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // El mapa ocupa el espacio libre de arriba
+                if (error == null) mapa(Modifier.fillMaxWidth().weight(1f))
+                barraEdicion()
+                panel(Modifier.fillMaxWidth(), false)
+            }
+        }
+    }
+}
+
+/** Franja del modo edición: dice qué pabellón ubicar y permite saltar al anterior o al siguiente. */
+@Composable
+private fun BarraEdicion(nombre: String, pendientes: Int, onAnterior: () -> Unit, onSiguiente: () -> Unit) {
+    Surface(color = MaterialTheme.colorScheme.tertiaryContainer, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onAnterior) {
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Anterior")
+            }
+            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Toca en el mapa dónde está:", style = MaterialTheme.typography.bodySmall)
+                Text(nombre, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    if (pendientes == 0) "Todos los pabellones están ubicados" else "Faltan $pendientes por ubicar",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            IconButton(onClick = onSiguiente) {
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Siguiente")
             }
         }
     }

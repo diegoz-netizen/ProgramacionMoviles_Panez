@@ -1,5 +1,9 @@
 package com.panez.campusgps.ui
 
+import androidx.compose.ui.graphics.Color
+import com.google.maps.android.compose.Circle
+import com.google.maps.android.compose.MapType
+import com.google.maps.android.compose.MapProperties
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
@@ -22,10 +26,14 @@ fun MapaUbicacion(
     lugares: List<LugarConDistancia>,
     seleccionado: Int?,
     masCercano: Lugar?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    modoEdicion: Boolean = false,
+    onTocarMapa: (latitud: Double, longitud: Double) -> Unit = { _, _ -> },
+    onTocarMarcador: (id: Int) -> Unit = {}
 ) {
+    // La cámara empieza sobre Tecsup Lima (Santa Anita)
     val camara = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(-12.0464, -77.0428), 12f)
+        position = CameraPosition.fromLatLngZoom(LatLng(TECSUP_LAT, TECSUP_LNG), 17f)
     }
 
     // Cuando llega la ubicación, la cámara viaja hasta ella
@@ -42,7 +50,13 @@ fun MapaUbicacion(
         camara.animate(CameraUpdateFactory.newLatLngZoom(LatLng(lugar.latitud, lugar.longitud), 17f))
     }
 
-    GoogleMap(modifier = modifier, cameraPositionState = camara) {
+    GoogleMap(
+        modifier = modifier,
+        cameraPositionState = camara,
+        // Satélite con nombres de calles: se ven los techos de los pabellones
+        properties = MapProperties(mapType = MapType.HYBRID),
+        onMapClick = { onTocarMapa(it.latitude, it.longitude) }
+    ) {
         // Marcador propio: rojo (el de por defecto)
         if (estado is UbicacionUi.Lista) {
             Marker(
@@ -63,16 +77,45 @@ fun MapaUbicacion(
                 LaunchedEffect(seleccionado) {
                     if (seleccionado == item.lugar.id) marcador.showInfoWindow()
                 }
+                val resaltado = item.lugar.id == seleccionado
                 Marker(
                     state = marcador,
                     title = item.lugar.nombre,
-                    snippet = item.lugar.categoria,
+                    snippet = if (item.lugar.ubicado) item.lugar.categoria else "${item.lugar.categoria} · por ubicar",
+                    // Naranja: el resaltado. Verde: el más cercano. Violeta: sin ubicar. Azul: el resto
                     icon = BitmapDescriptorFactory.defaultMarker(
-                        if (item.lugar.id == masCercano?.id) BitmapDescriptorFactory.HUE_GREEN
-                        else BitmapDescriptorFactory.HUE_AZURE
-                    )
+                        when {
+                            resaltado -> BitmapDescriptorFactory.HUE_ORANGE
+                            item.lugar.id == masCercano?.id -> BitmapDescriptorFactory.HUE_GREEN
+                            !item.lugar.ubicado -> BitmapDescriptorFactory.HUE_VIOLET
+                            else -> BitmapDescriptorFactory.HUE_AZURE
+                        }
+                    ),
+                    alpha = if (modoEdicion && !resaltado) 0.6f else 1f,
+                    // En modo edición, tocar un marcador lo resalta para volver a ubicarlo
+                    onClick = {
+                        if (modoEdicion) {
+                            onTocarMarcador(item.lugar.id)
+                            true
+                        } else false
+                    },
+                    zIndex = if (resaltado) 1f else 0f
                 )
+                // El pabellón resaltado lleva un círculo alrededor
+                if (resaltado) {
+                    Circle(
+                        center = LatLng(item.lugar.latitud, item.lugar.longitud),
+                        radius = 18.0,
+                        strokeColor = Color(0xFFFF9800),
+                        strokeWidth = 4f,
+                        fillColor = Color(0x44FF9800)
+                    )
+                }
             }
         }
     }
 }
+
+// Centro aproximado del campus de Tecsup Lima (Santa Anita)
+private const val TECSUP_LAT = -12.0440
+private const val TECSUP_LNG = -76.9528

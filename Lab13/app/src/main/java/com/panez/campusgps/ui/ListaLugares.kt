@@ -1,5 +1,7 @@
 package com.panez.campusgps.ui
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -36,8 +38,15 @@ fun ListaLugares(
     modifier: Modifier = Modifier,
     masCercanoId: Int? = null
 ) {
+    val estadoLista = rememberLazyListState()
+    // Cuando la lista se reordena por distancia, vuelve arriba para que se vea el más cercano
+    // (con key, LazyColumn seguía al primer elemento visible y quedaba desplazada)
+    LaunchedEffect(lugares.firstOrNull()?.lugar?.id) {
+        estadoLista.scrollToItem(0)
+    }
     LazyColumn(
         modifier = modifier,
+        state = estadoLista,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         items(lugares, key = { it.lugar.id }) { item ->

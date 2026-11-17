@@ -37,6 +37,23 @@ class MapaViewModel(
     private val _seleccionado = MutableStateFlow<Int?>(null)
     val seleccionado: StateFlow<Int?> = _seleccionado.asStateFlow()
 
+    // Modo edición: se resalta un pabellón a la vez y al tocar el mapa se mueve ahí
+    private val _modoEdicion = MutableStateFlow(false)
+    val modoEdicion: StateFlow<Boolean> = _modoEdicion.asStateFlow()
+
+    // Última posición conocida, para recalcular distancias cuando se mueve un pabellón
+    private var ultimaPosicion: Posicion? = null
+
+    init {
+        viewModelScope.launch {
+            lugaresRepo.lugares.collect { lista ->
+                val posicion = ultimaPosicion
+                _lugares.value = if (posicion == null) lista.map { LugarConDistancia(it, null) }
+                else ordenarPorDistancia(lista, posicion)
+            }
+        }
+    }
+
     // El primero de la lista con distancia calculada; null mientras no hay ubicación
     val masCercano: StateFlow<Lugar?> = lugares
         .map { lista -> lista.firstOrNull { it.metros != null }?.lugar }
@@ -68,13 +85,43 @@ class MapaViewModel(
 
     // Calcula la distancia a cada lugar y publica la lista ordenada de menor a mayor
     private fun actualizarDistancias(posicion: Posicion) {
-        val ordenados = lugaresRepo.obtenerLugares()
-            .map { LugarConDistancia(it, distanciaMetros(posicion, it)) }
-            .sortedBy { it.metros }
+        ultimaPosicion = posicion
+        val ordenados = ordenarPorDistancia(lugaresRepo.obtenerLugares(), posicion)
         _lugares.value = ordenados
         ordenados.forEach {
             Log.d("CampusGPS", "${it.lugar.nombre}: ${it.metros?.let(::formatearDistancia)}")
         }
+    }
+
+    private fun ordenarPorDistancia(lista: List<Lugar>, posicion: Posicion) =
+        lista.map { LugarConDistancia(it, distanciaMetros(posicion, it)) }.sortedBy { it.metros }
+
+    /** Entra o sale del modo edición. Al entrar se resalta el primer pabellón sin ubicar. */
+    fun alternarEdicion() {
+        val activar = !_modoEdicion.value
+        _modoEdicion.value = activar
+        if (activar) {
+            val porId = lugaresRepo.obtenerLugares().sortedBy { it.id }
+            _seleccionado.value = (porId.firstOrNull { !it.ubicado } ?: porId.firstOrNull())?.id
+        }
+    }
+
+    /** En modo edición, el toque en el mapa mueve el pabellón resaltado y pasa al siguiente. */
+    fun tocarMapa(latitud: Double, longitud: Double) {
+        if (!_modoEdicion.value) return
+        val id = _seleccionado.value ?: return
+        lugaresRepo.moverLugar(id, latitud, longitud)
+        siguiente()
+    }
+
+    fun siguiente() = moverSeleccion(+1)
+    fun anterior() = moverSeleccion(-1)
+
+    private fun moverSeleccion(paso: Int) {
+        val ids = lugaresRepo.obtenerLugares().map { it.id }.sorted()
+        if (ids.isEmpty()) return
+        val actual = ids.indexOf(_seleccionado.value).coerceAtLeast(0)
+        _seleccionado.value = ids[(actual + paso + ids.size) % ids.size]
     }
 
     // El lugar tocado en la lista (o null para ninguno)
