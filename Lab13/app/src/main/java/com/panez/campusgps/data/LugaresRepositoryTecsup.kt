@@ -25,6 +25,7 @@ class LugaresRepositoryTecsup : LugaresRepository {
         Lugar(10, "Pabellón 10", "Pabellón", -12.043727, -76.952826),
         Lugar(15, "Pabellón 15", "Pabellón", -12.043487, -76.9531418),
         Lugar(16, "Pabellón 16", "Pabellón", -12.043398, -76.9527886),
-        Lugar(18, "Entrada e informes", "Servicios", -12.0448814, -76.9514571)
+        // Puerta principal, frente a la Av. Cascanueces: es el punto 1 de la red de pasillos
+        Lugar(18, "Entrada e informes", "Servicios", -12.0452880, -76.9523798)
     ).sortedBy { it.id }
 }
