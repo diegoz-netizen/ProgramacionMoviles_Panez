@@ -32,7 +32,6 @@ fun InsigniaLugar(
     val fondo = when {
         elegido -> AmbarSeleccion
         masCercano -> VerdeCercano
-        !lugar.ubicado -> colores.outline
         else -> colores.primary
     }
     Box(

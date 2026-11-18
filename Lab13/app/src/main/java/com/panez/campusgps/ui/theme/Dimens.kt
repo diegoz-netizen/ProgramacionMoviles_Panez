@@ -18,8 +18,9 @@ object Dimens {
     val altoBoton = 52.dp
     val altoLista = 220.dp
     val altoBusqueda = 56.dp
-    val hojaRecogida = 300.dp
-    val hojaHorizontal = 96.dp
-    val cabeceraMapa = 128.dp
+    val tarjetaFlotante = 170.dp
+    val cabeceraMapa = 88.dp
+    val anchoMaximo = 520.dp
+    val celdaLugar = 150.dp
     val insigniaGrande = 64.dp
 }

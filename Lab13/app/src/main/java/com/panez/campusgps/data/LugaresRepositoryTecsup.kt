@@ -1,45 +1,12 @@
 package com.panez.campusgps.data
 
-import android.content.Context
 import com.panez.campusgps.model.Lugar
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
-/**
- * Pabellones de Tecsup Lima (Santa Anita).
- * Pabellones 10, 15, 16 y la entrada: coordenadas de Google Maps. El resto los ubicó Diego
- * desde la app (modo edición). Si alguno se vuelve a mover, el cambio se guarda en
- * SharedPreferences y tiene prioridad sobre estos valores.
- */
-class LugaresRepositoryTecsup(context: Context) : LugaresRepository {
+/** Pabellones de Tecsup Lima (Santa Anita). Son fijos: los usuarios no pueden moverlos. */
+class LugaresRepositoryTecsup : LugaresRepository {
 
-    private val prefs = context.getSharedPreferences("pabellones", Context.MODE_PRIVATE)
-
-    private val _lugares = MutableStateFlow(base().map(::conPosicionGuardada))
-    override val lugares: StateFlow<List<Lugar>> = _lugares.asStateFlow()
-
-    override fun obtenerLugares(): List<Lugar> = _lugares.value
-
-    override fun moverLugar(id: Int, latitud: Double, longitud: Double) {
-        prefs.edit().putString(clave(id), "$latitud,$longitud").apply()
-        _lugares.value = _lugares.value.map {
-            if (it.id == id) it.copy(latitud = latitud, longitud = longitud, ubicado = true) else it
-        }
-    }
-
-    /** Si el usuario ya lo ubicó, se usa la posición guardada. */
-    private fun conPosicionGuardada(lugar: Lugar): Lugar {
-        val guardada = prefs.getString(clave(lugar.id), null)?.split(",") ?: return lugar
-        val lat = guardada.getOrNull(0)?.toDoubleOrNull() ?: return lugar
-        val lng = guardada.getOrNull(1)?.toDoubleOrNull() ?: return lugar
-        return lugar.copy(latitud = lat, longitud = lng, ubicado = true)
-    }
-
-    private fun clave(id: Int) = "lugar_$id"
-
-    private fun base(): List<Lugar> = listOf(
-        // Ubicados por Diego en el celular (modo edición), sobre la vista satelital del campus
+    override fun obtenerLugares(): List<Lugar> = listOf(
+        // Ubicados por Diego sobre la vista satelital del campus
         Lugar(1, "Pabellón 1", "Pabellón", -12.0451381, -76.9528217),
         Lugar(2, "Pabellón 2", "Pabellón", -12.0449755, -76.9528301),
         Lugar(3, "Pabellón 3", "Pabellón", -12.0450207, -76.9523480),

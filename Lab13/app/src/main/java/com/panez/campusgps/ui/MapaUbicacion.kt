@@ -1,6 +1,5 @@
 package com.panez.campusgps.ui
 
-import com.panez.campusgps.model.RedPasillos
 import com.panez.campusgps.model.Recorrido
 import com.google.android.gms.maps.model.JointType
 import androidx.compose.foundation.layout.PaddingValues
@@ -42,14 +41,9 @@ fun MapaUbicacion(
     seleccionado: Int?,
     masCercano: Lugar?,
     modifier: Modifier = Modifier,
-    modoEdicion: Boolean = false,
-    onTocarMapa: (latitud: Double, longitud: Double) -> Unit = { _, _ -> },
+    onTocarMapa: () -> Unit = {},
     onTocarMarcador: (id: Int) -> Unit = {},
     recorrido: Recorrido? = null,
-    red: RedPasillos = RedPasillos(),
-    modoPasillos: Boolean = false,
-    nodoActual: Int? = null,
-    onTocarNodo: (id: Int) -> Unit = {},
     contentPadding: PaddingValues = PaddingValues()
 ) {
     val colores = MaterialTheme.colorScheme
@@ -96,9 +90,9 @@ fun MapaUbicacion(
         properties = MapProperties(mapType = MapType.HYBRID),
         // Sin los botones de Google: la app trae su propio botón de ubicación
         uiSettings = MapUiSettings(zoomControlsEnabled = false, myLocationButtonEnabled = false, mapToolbarEnabled = false),
-        // Deja libre lo que tapan la búsqueda (arriba) y la hoja (abajo)
+        // Deja libre lo que tapan la búsqueda (arriba) y la tarjeta (abajo)
         contentPadding = contentPadding,
-        onMapClick = { onTocarMapa(it.latitude, it.longitude) }
+        onMapClick = { onTocarMapa() }
     ) {
         // Tu posición: punto azul con un halo, como en las apps de mapas
         if (posicion != null) {
@@ -119,7 +113,7 @@ fun MapaUbicacion(
                 zIndex = 3f
             )
         }
-        // Ruta a pie: sigue los pasillos (o recta si todavía no hay red dibujada)
+        // Ruta a pie por los pasillos del campus
         if (recorrido != null) {
             Polyline(
                 points = recorrido.puntos.map { LatLng(it.latitud, it.longitud) },
@@ -130,36 +124,6 @@ fun MapaUbicacion(
                 zIndex = 2f
             )
         }
-        // Dibujando pasillos: se ven los tramos y los puntos (el último, resaltado)
-        if (modoPasillos) {
-            val porId = red.nodos.associateBy { it.id }
-            red.tramos.forEach { (a, b) ->
-                val na = porId[a] ?: return@forEach
-                val nb = porId[b] ?: return@forEach
-                Polyline(
-                    points = listOf(LatLng(na.latitud, na.longitud), LatLng(nb.latitud, nb.longitud)),
-                    color = colores.tertiaryContainer,
-                    width = 10f,
-                    zIndex = 3f
-                )
-            }
-            val punto = remember(densidad) { puntoUbicacion(colores.tertiary.toArgb(), densidad) }
-            val puntoActual = remember(densidad) { puntoUbicacion(AmbarSeleccion.toArgb(), densidad) }
-            red.nodos.forEach { nodo ->
-                key("nodo_${nodo.id}") {
-                    Marker(
-                        state = rememberUpdatedMarkerState(position = LatLng(nodo.latitud, nodo.longitud)),
-                        icon = if (nodo.id == nodoActual) puntoActual else punto,
-                        anchor = Offset(0.5f, 0.5f),
-                        zIndex = 4f,
-                        onClick = {
-                            onTocarNodo(nodo.id)
-                            true
-                        }
-                    )
-                }
-            }
-        }
         // Plano del campus: cada lugar es un bloque de color con su etiqueta encima (solo dibuja lo que recibe)
         lugares.forEach { item ->
             key(item.lugar.id) {
@@ -168,7 +132,6 @@ fun MapaUbicacion(
                 val color = when {
                     resaltado -> AmbarSeleccion
                     lugar.id == masCercano?.id -> VerdeCercano
-                    !lugar.ubicado -> colores.outline
                     else -> colores.primary
                 }
                 // Bloque aproximado del edificio, centrado en su coordenada
@@ -191,15 +154,12 @@ fun MapaUbicacion(
                 Marker(
                     state = marcador,
                     title = lugar.nombre,
-                    snippet = if (lugar.ubicado) lugar.categoria else "${lugar.categoria} · por ubicar",
+                    snippet = lugar.categoria,
                     icon = etiqueta,
                     anchor = Offset(0.5f, 0.5f),
-                    alpha = if (modoEdicion && !resaltado) 0.6f else 1f,
-                    // Tocar una etiqueta abre su ficha (en modo edición, la resalta para moverla).
-                    // Dibujando pasillos, pone un punto en ese lugar para conectarlo a la red
+                    // Tocar una etiqueta abre su tarjeta
                     onClick = {
-                        if (modoPasillos) onTocarMapa(lugar.latitud, lugar.longitud)
-                        else onTocarMarcador(lugar.id)
+                        onTocarMarcador(lugar.id)
                         true
                     },
                     zIndex = if (resaltado) 2f else 1f

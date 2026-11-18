@@ -7,9 +7,7 @@ data class Lugar(
     val nombre: String,
     val categoria: String,
     val latitud: Double,
-    val longitud: Double,
-    /** false: posición provisional, falta ubicarlo en el mapa (modo edición). */
-    val ubicado: Boolean = true
+    val longitud: Double
 )
 
 // metros = null mientras todavía no se conoce la ubicación del usuario
