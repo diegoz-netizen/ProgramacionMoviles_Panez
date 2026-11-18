@@ -1,20 +1,35 @@
 # CampusGPS — Laboratorio 13 (Programación en Móviles)
 
-**Alumno:** Diego Panez · **Paquete:** `com.panez.campusgps`
+**Alumno:** Diego Panez Rondinel · **Paquete:** `com.panez.campusgps` · **Rama:** `con-ia` (Fase 2)
 
-App Android en Kotlin con Jetpack Compose que pide el permiso de ubicación, muestra tu posición en Google Maps, marca los lugares del campus, calcula a qué distancia está cada uno, los ordena de más cerca a más lejos y te lleva al más cercano.
+Guía del campus de **Tecsup Lima (Santa Anita)** para Android, hecha en Kotlin con Jetpack Compose. Muestra los pabellones sobre Google Maps, busca lugares y traza rutas a pie **por los pasillos del campus**.
 
-## Qué hace
+La Fase 1, con los 5 lugares ficticios de la guía, está en la rama [`sin-ia`](https://github.com/diegoz-netizen/ProgramacionMoviles_Panez/tree/sin-ia/Lab13). El análisis del uso de IA está en [PROMPTS.md](PROMPTS.md).
 
-| Función | Estado |
+## Capturas de la Fase 2
+
+| Splash | Mapa | Lugares |
+|---|---|---|
+| ![Splash con el logo de Tecsup](capturas/fase2/01-splash.png) | ![Plano del campus a pantalla completa](capturas/fase2/02-mapa.png) | ![Directorio de lugares en cuadrícula](capturas/fase2/03-lugares.png) |
+
+| Rutas | Ruta en el mapa |
 |---|---|
-| Permiso de ubicación en tiempo de ejecución | Hecho |
-| Mapa con el marcador «Estás aquí» (latitud y longitud en el globo) | Hecho |
-| Marcadores de los 5 lugares del campus (nombre y categoría al tocarlos) | Hecho |
-| Distancia a cada lugar y lista ordenada (en m o km) | Hecho |
-| Tocar una tarjeta: la cámara viaja al lugar y la tarjeta queda resaltada | Hecho |
-| «Ir al más cercano»: marcador verde y cámara al lugar | Hecho |
-| Errores: permiso denegado (con *Abrir ajustes*), GPS apagado (con *Reintentar*) y sin Play Services | Hecho |
+| ![Planificador con origen, destino, metros y minutos](capturas/fase2/04-rutas.png) | ![Ruta de la entrada al Pabellón 7 por los pasillos](capturas/fase2/05-ruta-en-mapa.png) |
+
+## Qué agrega la Fase 2
+
+| Mejora | Detalle |
+|---|---|
+| Campus real | 16 pabellones, canchas y entrada de Tecsup Lima |
+| Diseño propio | Tema Tecsup con Material 3 y splash con el logo |
+| Tres pestañas | **Mapa**, **Lugares** y **Rutas** |
+| Plano del campus | Bloques de color con la etiqueta de cada pabellón |
+| Búsqueda y filtros | Por nombre o número (`P7`) y por categoría |
+| Rutas por pasillos | Red de 33 puntos y camino más corto con Dijkstra |
+| Distancia real | Metros y minutos a pie medidos sobre el recorrido |
+| Uso en el campus | Desde «Mi ubicación», la ruta se activa a menos de 100 m de los pasillos |
+
+**Pendiente:** inicio de sesión con Google limitado a `@tecsup.edu.pe`, puerta exacta de cada pabellón y prueba de la ruta caminando dentro del campus.
 
 ## Estructura de paquetes
 
@@ -22,52 +37,76 @@ App Android en Kotlin con Jetpack Compose que pide el permiso de ubicación, mue
 com.panez.campusgps/
 ├── MainActivity.kt
 ├── model/
-│   └── Modelos.kt                    Posicion, Lugar, LugarConDistancia, TipoError, UbicacionUi
+│   ├── Modelos.kt                    Posicion, Lugar, LugarConDistancia, TipoError, UbicacionUi
+│   └── RedPasillos.kt                Nodo, RedPasillos, Recorrido
 ├── data/
 │   ├── UbicacionRepository.kt        interface
-│   ├── UbicacionRepositoryGoogle.kt  implementación con FusedLocationProviderClient
+│   ├── UbicacionRepositoryGoogle.kt  FusedLocationProviderClient
 │   ├── LugaresRepository.kt          interface
-│   └── LugaresRepositoryLocal.kt     lugares del campus en memoria
+│   ├── LugaresRepositoryLocal.kt     lugares ficticios de la Fase 1
+│   ├── LugaresRepositoryTecsup.kt    lugares reales del campus
+│   ├── PasillosRepository.kt         interface y red de Tecsup
+│   └── RedBaseTecsup.kt              puntos y tramos de los pasillos
 ├── util/
 │   ├── Distancia.kt                  distanciaMetros()
-│   └── Formato.kt                    formatearDistancia() → "88 m" / "1.2 km"
+│   ├── Formato.kt                    formatearDistancia(), minutosAPie()
+│   └── Rutas.kt                      Haversine y Dijkstra
 ├── viewmodel/
-│   ├── MapaViewModel.kt              estado de la pantalla y lógica
+│   ├── MapaViewModel.kt              estado de las pantallas y lógica
 │   └── CampusViewModelFactory.kt
 └── ui/
-    ├── PantallaMapa.kt               pantalla principal y permiso
-    ├── MapaUbicacion.kt              GoogleMap con marcadores
-    ├── ListaLugares.kt               tarjetas ordenadas por distancia
+    ├── PantallaSplash.kt             inicio con el logo
+    ├── PantallaMapa.kt               pestañas, permiso y mapa
+    ├── PantallaLugares.kt            directorio de lugares
+    ├── PantallaRutas.kt              planificador de rutas
+    ├── MapaUbicacion.kt              GoogleMap con plano y ruta
+    ├── EtiquetaMapa.kt               etiquetas del plano
     ├── MensajeError.kt               mensaje con Reintentar o Abrir ajustes
-    └── theme/
+    ├── components/                   componentes reutilizables
+    └── theme/                        colores, tipografía, formas y medidas
 ```
 
 ## Arquitectura MVVM + Repository
 
 ```mermaid
 flowchart LR
-    UI["ui/ PantallaMapa · MapaUbicacion · ListaLugares"] -- "eventos: buscar(), seleccionar()" --> VM["viewmodel/ MapaViewModel"]
-    VM -- "StateFlow&lt;UbicacionUi&gt; y lista con distancias" --> UI
-    VM --> UR["UbicacionRepository (interface)"]
-    VM --> LR["LugaresRepository (interface)"]
-    UR --> URG["UbicacionRepositoryGoogle → FusedLocationProviderClient"]
-    LR --> LRL["LugaresRepositoryLocal → lista de lugares"]
-    VM --> D["util/ distanciaMetros()"]
+    UI["ui/ PantallaMapa · PantallaLugares · PantallaRutas"] -- "eventos: buscar(), seleccionar(), iniciarRuta()" --> VM["viewmodel/ MapaViewModel"]
+    VM -- "StateFlow: estado, lugares y recorrido" --> UI
+    VM --> UR["UbicacionRepository"]
+    VM --> LR["LugaresRepository"]
+    VM --> PR["PasillosRepository"]
+    UR --> URG["UbicacionRepositoryGoogle"]
+    LR --> LRT["LugaresRepositoryTecsup"]
+    PR --> PRT["PasillosRepositoryTecsup"]
+    VM --> D["util/ Rutas.kt: Dijkstra"]
 ```
 
-La pantalla solo dibuja el estado y avisa los toques. El ViewModel pide la posición al repositorio, calcula y ordena las distancias, y publica el resultado en un `StateFlow`. Los repositorios son interfaces, así el ViewModel no depende de Google Play Services.
+La pantalla solo dibuja el estado y avisa los toques. El ViewModel recibe interfaces, no conoce `Context` y calcula la ruta con funciones puras de `util/`.
+
+## Cómo se calcula la ruta
+
+1. Se busca el punto del pasillo más cercano al origen y el que queda frente al destino.
+2. Esos dos puntos se agregan temporalmente al grafo de pasillos.
+3. Dijkstra encuentra el camino más corto entre ellos.
+4. La distancia es la suma de los tramos, y el tiempo usa unos 80 m por minuto.
+
+Las pruebas están en `app/src/test/.../util/RutasTest.kt` (9 pruebas):
+
+```bash
+./gradlew :app:testDebugUnitTest
+```
 
 ## Clave de Google Maps
 
-La clave **no está en el código**. Se pone en `local.properties` (que no se sube):
+La clave **no está en el código**. Se pone en `local.properties`, que no se sube:
 
 ```
 MAPS_API_KEY=tu_clave
 ```
 
-`app/build.gradle.kts` la lee y la pasa al `AndroidManifest.xml` con `manifestPlaceholders` (`${MAPS_API_KEY}`).
+`app/build.gradle.kts` la lee y la pasa al `AndroidManifest.xml` con `manifestPlaceholders`. En Google Cloud está restringida al paquete, a la huella SHA-1 y a *Maps SDK for Android*.
 
-## Capturas
+## Capturas de la Fase 1
 
 | Permiso | Mapa con mi ubicación | Marcadores |
 |---|---|---|
@@ -98,4 +137,8 @@ Desde la segunda negativa Android ya no vuelve a mostrar el cuadro de permiso. L
 
 1. Abrir la carpeta `Lab13` en Android Studio.
 2. Poner la clave en `local.properties` (`MAPS_API_KEY=...`).
-3. Ejecutar en un emulador con Google Play. Para probar, fijar la ubicación del emulador en `-12.0464, -77.0428`.
+3. Ejecutar en un celular o en un emulador con Google Play. Para probar en el emulador, fijar la ubicación dentro del campus: `-12.0447, -76.9525`.
+
+## Informe
+
+[Lab13_CampusGPS_Diego_Panez.docx](Lab13_CampusGPS_Diego_Panez.docx)
