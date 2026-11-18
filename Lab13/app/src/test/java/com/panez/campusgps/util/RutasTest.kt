@@ -1,10 +1,12 @@
 package com.panez.campusgps.util
 
+import com.panez.campusgps.data.RedBaseTecsup
 import com.panez.campusgps.model.Nodo
 import com.panez.campusgps.model.Posicion
 import com.panez.campusgps.model.RedPasillos
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -46,6 +48,24 @@ class RutasTest {
         val r = calcularRecorrido(red, origen, destino)
         assertTrue(r.porPasillos)
         assertTrue(r.metros > metrosEntre(origen, destino))
+    }
+
+    @Test
+    fun redDeTecsup_todosLosPuntosEstanConectados() {
+        val tecsup = RedBaseTecsup.red
+        tecsup.nodos.forEach { assertNotNull("Nodo ${it.id}", caminoMasCorto(tecsup, 1, it.id)) }
+    }
+
+    @Test
+    fun redDeTecsup_cruceCentralNoDaLaVuelta() {
+        assertEquals(listOf(3, 12), caminoMasCorto(RedBaseTecsup.red, 3, 12)!!.map { it.id })
+    }
+
+    @Test
+    fun campus_dentroSiFueraNo() {
+        val tecsup = RedBaseTecsup.red
+        assertTrue(estaEnElCampus(tecsup, Posicion(-12.0447, -76.9525)))
+        assertFalse(estaEnElCampus(tecsup, Posicion(-12.0464, -77.0428)))
     }
 
     @Test

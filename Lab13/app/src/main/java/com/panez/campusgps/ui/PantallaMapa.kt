@@ -109,6 +109,7 @@ fun PantallaMapa(vm: MapaViewModel) {
     val masCercano by vm.masCercano.collectAsState()
     val ruta by vm.ruta.collectAsState()
     val recorrido by vm.recorrido.collectAsState()
+    val fueraDelCampus by vm.fueraDelCampus.collectAsState()
     val red by vm.red.collectAsState()
     val modoPasillos by vm.modoPasillos.collectAsState()
     val nodoActual by vm.nodoActual.collectAsState()
@@ -194,6 +195,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                             esMasCercano = elegido.lugar.id == masCercano?.id,
                             ruta = ruta,
                             recorrido = recorrido,
+                            fueraDelCampus = fueraDelCampus,
                             onRuta = vm::alternarRuta,
                             onUbicar = { alPulsar() },
                             onCerrar = { vm.seleccionar(null) }
@@ -485,6 +487,7 @@ private fun FichaLugar(
     esMasCercano: Boolean,
     ruta: Boolean,
     recorrido: Recorrido?,
+    fueraDelCampus: Boolean,
     onRuta: () -> Unit,
     onUbicar: () -> Unit,
     onCerrar: () -> Unit
@@ -534,7 +537,11 @@ private fun FichaLugar(
                 modifier = Modifier.weight(1f)
             )
         }
-        if (metros != null) {
+        if (fueraDelCampus) {
+            OutlinedButton(onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth().height(Dimens.altoBoton)) {
+                Text("La ruta se activa al llegar a Tecsup")
+            }
+        } else if (metros != null) {
             Button(onClick = onRuta, modifier = Modifier.fillMaxWidth().height(Dimens.altoBoton)) {
                 Icon(if (ruta) Icons.Filled.Close else Icons.Filled.Directions, contentDescription = null)
                 Spacer(Modifier.width(Dimens.sm))

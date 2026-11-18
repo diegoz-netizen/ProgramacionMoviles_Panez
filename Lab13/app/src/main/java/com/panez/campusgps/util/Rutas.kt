@@ -13,6 +13,9 @@ import kotlin.math.sqrt
 
 private const val RADIO_TIERRA_M = 6_371_000.0
 
+/** Más lejos que esto del pasillo más cercano, se considera que aún no llegas al campus. */
+const val MAXIMO_FUERA_DEL_CAMPUS_M = 100f
+
 /** Distancia en metros entre dos puntos (fórmula de Haversine). Kotlin puro: se puede probar sin Android. */
 fun metrosEntre(a: Posicion, b: Posicion): Float {
     val dLat = Math.toRadians(b.latitud - a.latitud)
@@ -23,6 +26,10 @@ fun metrosEntre(a: Posicion, b: Posicion): Float {
 }
 
 private fun Nodo.posicion() = Posicion(latitud, longitud)
+
+/** La ruta interna solo tiene sentido al llegar a Tecsup o estando dentro. Sin red no se puede saber. */
+fun estaEnElCampus(red: RedPasillos, posicion: Posicion): Boolean =
+    red.nodos.isEmpty() || red.nodos.any { metrosEntre(posicion, it.posicion()) <= MAXIMO_FUERA_DEL_CAMPUS_M }
 
 /**
  * Camino a pie desde [origen] hasta [destino] siguiendo los pasillos.

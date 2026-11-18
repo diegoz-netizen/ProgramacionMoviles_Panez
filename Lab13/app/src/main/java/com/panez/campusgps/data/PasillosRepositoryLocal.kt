@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 class PasillosRepositoryLocal(context: Context) : PasillosRepository {
 
-    private val prefs = context.getSharedPreferences("pasillos", Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences("pasillos_v2", Context.MODE_PRIVATE)
 
     private val _red = MutableStateFlow(leer())
     override val red: StateFlow<RedPasillos> = _red.asStateFlow()
@@ -54,6 +54,8 @@ class PasillosRepositoryLocal(context: Context) : PasillosRepository {
     }
 
     private fun leer(): RedPasillos {
+        // Mientras nadie edite la red, se usa la de Tecsup que viene con la app
+        if (!prefs.contains("nodos")) return RedBaseTecsup.red
         val nodos = prefs.getString("nodos", "").orEmpty().split(";").mapNotNull { texto ->
             val p = texto.split(",")
             val id = p.getOrNull(0)?.toIntOrNull() ?: return@mapNotNull null

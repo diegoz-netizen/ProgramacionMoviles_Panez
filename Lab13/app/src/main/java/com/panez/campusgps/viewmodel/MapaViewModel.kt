@@ -9,6 +9,7 @@ import com.panez.campusgps.data.PasillosRepository
 import com.panez.campusgps.model.Recorrido
 import com.panez.campusgps.model.RedPasillos
 import com.panez.campusgps.util.calcularRecorrido
+import com.panez.campusgps.util.estaEnElCampus
 import com.panez.campusgps.data.UbicacionRepository
 import com.panez.campusgps.model.Lugar
 import com.panez.campusgps.model.LugarConDistancia
@@ -139,11 +140,17 @@ class MapaViewModel(
         _nodoActual.value = null
     }
 
+    // La app guía dentro de Tecsup: lejos del campus no se traza ruta
+    val fueraDelCampus: StateFlow<Boolean> = combine(estado, red) { est, redActual ->
+        val posicion = (est as? UbicacionUi.Lista)?.posicion
+        posicion != null && !estaEnElCampus(redActual, posicion)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     // Camino a pie hasta el lugar elegido, por los pasillos (Dijkstra) o en línea recta si no hay red
     val recorrido: StateFlow<Recorrido?> = combine(ruta, seleccionado, estado, red, lugares) { r, id, est, redActual, lista ->
         val posicion = (est as? UbicacionUi.Lista)?.posicion
         val lugar = lista.firstOrNull { it.lugar.id == id }?.lugar
-        if (!r || posicion == null || lugar == null) null
+        if (!r || posicion == null || lugar == null || !estaEnElCampus(redActual, posicion)) null
         else calcularRecorrido(redActual, posicion, Posicion(lugar.latitud, lugar.longitud))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
