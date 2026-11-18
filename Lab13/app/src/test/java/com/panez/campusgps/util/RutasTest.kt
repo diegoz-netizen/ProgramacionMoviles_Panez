@@ -69,6 +69,18 @@ class RutasTest {
     }
 
     @Test
+    fun recorrido_terminaEnElPasilloFrenteAlDestino() {
+        val a = Nodo(1, -12.0450, -76.9530)
+        val b = Nodo(2, -12.0450, -76.9520)
+        val pasillo = RedPasillos(listOf(a, b), listOf(1 to 2))
+        // Edificio al lado de la mitad del pasillo: no debe llegar hasta la esquina ni cruzarlo
+        val r = calcularRecorrido(pasillo, Posicion(a.latitud, a.longitud), Posicion(-12.0449, -76.9525))
+        val ultimo = r.puntos.last()
+        assertEquals(-12.0450, ultimo.latitud, 0.000001)
+        assertEquals(-76.9525, ultimo.longitud, 0.000001)
+    }
+
+    @Test
     fun metrosEntre_unaCuadraDeLatitud() {
         // 0.001 grados de latitud son unos 111 m
         val m = metrosEntre(Posicion(-12.0450, -76.9530), Posicion(-12.0440, -76.9530))
