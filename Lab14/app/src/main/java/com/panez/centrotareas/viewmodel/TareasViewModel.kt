@@ -8,12 +8,14 @@ import com.panez.centrotareas.model.CargaUi
 import com.panez.centrotareas.model.PrimosUi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 
 class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
@@ -85,27 +87,34 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         trabajoPrimos?.cancel()
     }
 
-    // ----- Dos cargas
+    // ----- Dos cargas con tiempo máximo por carga
     private val _carga = MutableStateFlow<CargaUi>(CargaUi.Inicial)
     val carga: StateFlow<CargaUi> = _carga.asStateFlow()
 
     private val _simularError = MutableStateFlow(false)
     val simularError: StateFlow<Boolean> = _simularError.asStateFlow()
 
+    private val _tiempoMaximoActivo = MutableStateFlow(true)
+    val tiempoMaximoActivo: StateFlow<Boolean> = _tiempoMaximoActivo.asStateFlow()
+
     fun cambiarSimularError(valor: Boolean) {
         _simularError.value = valor
     }
 
+    fun cambiarTiempoMaximo(valor: Boolean) {
+        _tiempoMaximoActivo.value = valor
+    }
+
     fun cargarUnaPorUna() = ejecutarCarga("Una por una") {
-        val perfil = repo.cargarPerfil()
-        val pedidos = repo.cargarPedidos(_simularError.value)
+        val perfil = conTiempoMaximo { repo.cargarPerfil() }
+        val pedidos = conTiempoMaximo { repo.cargarPedidos(_simularError.value) }
         perfil to pedidos
     }
 
     fun cargarALaVez() = ejecutarCarga("A la vez") {
         coroutineScope {
-            val perfil = async { repo.cargarPerfil() }
-            val pedidos = async { repo.cargarPedidos(_simularError.value) }
+            val perfil = async { conTiempoMaximo { repo.cargarPerfil() } }
+            val pedidos = async { conTiempoMaximo { repo.cargarPedidos(_simularError.value) } }
             perfil.await() to pedidos.await()
         }
     }
@@ -123,11 +132,21 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
                     pedidos = pedidos.size,
                     milisegundos = System.currentTimeMillis() - inicio
                 )
+            } catch (e: TimeoutCancellationException) {
+                // Va primero porque es una subclase de CancellationException.
+                _carga.value = CargaUi.Error("Tardó demasiado")
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 _carga.value = CargaUi.Error("No se pudo cargar: ${e.message}")
             }
         }
+    }
+
+    private suspend fun <T> conTiempoMaximo(bloque: suspend () -> T): T =
+        if (_tiempoMaximoActivo.value) withTimeout(TIEMPO_MAXIMO_MS) { bloque() } else bloque()
+
+    private companion object {
+        const val TIEMPO_MAXIMO_MS = 2000L
     }
 }

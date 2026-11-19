@@ -151,10 +151,17 @@ private fun TarjetaPrimos(vm: TareasViewModel) {
 private fun TarjetaCargas(vm: TareasViewModel) {
     val carga by vm.carga.collectAsState()
     val simularError by vm.simularError.collectAsState()
+    val tiempoMaximoActivo by vm.tiempoMaximoActivo.collectAsState()
     val cargando = carga is CargaUi.Cargando
 
     TarjetaTarea("Dos cargas") {
         FilaInterruptor("Simular error", simularError, !cargando, vm::cambiarSimularError)
+        FilaInterruptor(
+            "Tiempo máximo (2 s por carga)",
+            tiempoMaximoActivo,
+            !cargando,
+            vm::cambiarTiempoMaximo
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(onClick = vm::cargarUnaPorUna, enabled = !cargando) {
                 Text("Una por una")
