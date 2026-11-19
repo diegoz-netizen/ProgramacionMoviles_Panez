@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.panez.centrotareas.model.CargaUi
 import com.panez.centrotareas.model.PrimosUi
 import com.panez.centrotareas.viewmodel.TareasViewModel
 
@@ -66,11 +67,7 @@ fun PantallaTareas(vm: TareasViewModel) {
         ) {
             TarjetaProgreso(vm)
             TarjetaPrimos(vm)
-
-            TarjetaTarea("Dos cargas") {
-                // TODO Paso 6: botones Una por una y A la vez, indicador y resultado
-                // TODO Paso 7: Switch Simular error, mensaje de error y botón Reintentar
-            }
+            TarjetaCargas(vm)
         }
     }
 }
@@ -145,6 +142,34 @@ private fun TarjetaPrimos(vm: TareasViewModel) {
                 detalle = "Tiempo: ${estado.milisegundos} ms"
             )
             PrimosUi.Cancelado -> Text("Cancelado")
+        }
+    }
+}
+
+@Composable
+private fun TarjetaCargas(vm: TareasViewModel) {
+    val carga by vm.carga.collectAsState()
+    val cargando = carga is CargaUi.Cargando
+
+    TarjetaTarea("Dos cargas") {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = vm::cargarUnaPorUna, enabled = !cargando) {
+                Text("Una por una")
+            }
+            Button(onClick = vm::cargarALaVez, enabled = !cargando) {
+                Text("A la vez")
+            }
+        }
+
+        when (val estado = carga) {
+            CargaUi.Inicial -> Unit
+            CargaUi.Cargando -> CircularProgressIndicator()
+            is CargaUi.Exito -> RecuadroExito(
+                titulo = "Modo: ${estado.modo}",
+                detalle = "Perfil: ${estado.perfil}\nPedidos: ${estado.pedidos}\n" +
+                    "Tiempo: ${estado.milisegundos} ms"
+            )
+            is CargaUi.Error -> Unit // TODO Paso 7: mensaje de error y botón Reintentar
         }
     }
 }
