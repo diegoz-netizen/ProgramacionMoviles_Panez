@@ -98,16 +98,23 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
     private val _carga = MutableStateFlow<CargaUi>(CargaUi.Inicial)
     val carga: StateFlow<CargaUi> = _carga.asStateFlow()
 
+    private val _simularError = MutableStateFlow(false)
+    val simularError: StateFlow<Boolean> = _simularError.asStateFlow()
+
+    fun cambiarSimularError(valor: Boolean) {
+        _simularError.value = valor
+    }
+
     fun cargarUnaPorUna() = ejecutarCarga("Una por una") {
         val perfil = repo.cargarPerfil()
-        val pedidos = repo.cargarPedidos(false)
+        val pedidos = repo.cargarPedidos(_simularError.value)
         perfil to pedidos
     }
 
     fun cargarALaVez() = ejecutarCarga("A la vez") {
         coroutineScope {
             val perfil = async { repo.cargarPerfil() }
-            val pedidos = async { repo.cargarPedidos(false) }
+            val pedidos = async { repo.cargarPedidos(_simularError.value) }
             perfil.await() to pedidos.await()
         }
     }
@@ -117,15 +124,19 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         _carga.value = CargaUi.Cargando
         viewModelScope.launch {
             val inicio = System.currentTimeMillis()
-            val (perfil, pedidos) = cargar()
-            _carga.value = CargaUi.Exito(
-                modo = modo,
-                perfil = perfil,
-                pedidos = pedidos.size,
-                milisegundos = System.currentTimeMillis() - inicio
-            )
+            try {
+                val (perfil, pedidos) = cargar()
+                _carga.value = CargaUi.Exito(
+                    modo = modo,
+                    perfil = perfil,
+                    pedidos = pedidos.size,
+                    milisegundos = System.currentTimeMillis() - inicio
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _carga.value = CargaUi.Error("No se pudo cargar: ${e.message}")
+            }
         }
     }
-
-    // TODO Paso 7: simularError y manejo de errores
 }
