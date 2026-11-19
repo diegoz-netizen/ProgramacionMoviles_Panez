@@ -1,18 +1,52 @@
 # CentroTareas — Laboratorio 14 (Programación en Móviles)
 
-**Alumno:** Diego Panez · **Paquete:** `com.panez.centrotareas`
+**Alumno:** Diego Panez Rondinel · **Paquete:** `com.panez.centrotareas` · **Rama:** `con-ia` (Fase 2)
 
-App Android en Kotlin con Jetpack Compose y Material 3 que ejecuta tres trabajos que tardan sin congelar la pantalla: una tarea con barra de progreso, un cálculo pesado de números primos y dos cargas de datos simuladas. Todo el trabajo largo corre con corrutinas y se puede seguir desde la interfaz.
+App Android en Kotlin con Jetpack Compose y Material 3 que ejecuta tres trabajos que tardan sin congelar la pantalla: una tarea con progreso, un cálculo pesado de números primos y dos cargas de datos simuladas. Todo el trabajo largo corre con corrutinas y se puede seguir desde la interfaz.
+
+La Fase 1, hecha según la guía, está en la rama [`sin-ia`](https://github.com/diegoz-netizen/ProgramacionMoviles_Panez/tree/sin-ia/Lab14). El registro del uso de IA en la Fase 2 está en [PROMPTS.md](PROMPTS.md).
 
 ## Qué hace
 
 | Función | Detalle |
 |---|---|
 | Prueba de vida | El botón «Tócame» sigue sumando mientras la app trabaja |
-| Tarea con progreso | Barra de 0 a 100 %, con Iniciar y Cancelar |
+| Tarea con progreso | Indicador de 0 a 100 %, con Iniciar y Cancelar |
 | Números primos | Cuenta los primos hasta N en `Dispatchers.Default` y se puede cancelar |
 | Dos cargas | Compara «Una por una» (≈ 5 s) con «A la vez» usando `async` (≈ 3 s) |
 | Errores | «Simular error» muestra el recuadro rojo y el botón Reintentar |
+
+## Qué agrega la Fase 2
+
+| Mejora | Detalle |
+|---|---|
+| Progreso desde el Repository | `progresoTarea()` emite el avance como `Flow<Float>` con `flowOn(Dispatchers.Default)` |
+| Tiempo máximo | `withTimeout` limita cada carga a 2 s y muestra «Tardó demasiado» |
+| Primos con progreso | El porcentaje del cálculo se actualiza en tiempo real |
+| Diseño propio | Identidad «Sala de control» con tema, componentes y navegación inferior |
+
+Los pedidos tardan 3 s, así que con «Tiempo máximo» encendido las cargas terminan en «Tardó demasiado». Al apagarlo se comparan los 5 s de «Una por una» con los 3 s de «A la vez».
+
+## Sistema de diseño: Sala de control
+
+La rama `con-ia` reemplaza la pantalla única de tarjetas por un panel técnico que vigila los trabajos de la app.
+
+| Decisión | Elección |
+|---|---|
+| Personalidad | Técnica, precisa y tranquila, como un panel de instrumentos |
+| Color | Azul noche de fondo, menta para la acción y ámbar para el trabajo activo |
+| Formas | Paneles de 16 dp y botones de 12 dp |
+| Tipografía | Roboto para textos y letra monoespaciada para las cifras |
+| Navegación | Barra inferior con Tarea, Primos y Cargas |
+| Estado | El panel «Hilo principal» siempre visible y un punto ámbar en la sección que está trabajando |
+
+| Tarea | Primos |
+|---|---|
+| ![Tarea en curso](capturas/diseno_01_tarea.png) | ![Primos calculando](capturas/diseno_02_primos.png) |
+
+| Cargas | Error |
+|---|---|
+| ![Resultado de cargas](capturas/diseno_03_cargas.png) | ![Error simulado](capturas/diseno_04_error.png) |
 
 ## Estructura de paquetes
 
@@ -28,9 +62,18 @@ com.panez.centrotareas/
 │   ├── TareasViewModel.kt          estado de la pantalla y corrutinas
 │   └── TareasViewModelFactory.kt
 └── ui/
-    ├── PantallaTareas.kt           las tres tarjetas
+    ├── PantallaTareas.kt           navegación entre secciones
+    ├── SeccionTarea.kt             tarea con progreso
+    ├── SeccionPrimos.kt            conteo de primos
+    ├── SeccionCargas.kt            comparación de cargas
+    ├── components/
+    │   └── ComponentesControl.kt   paneles, indicadores y botones
     └── theme/
-        └── Theme.kt
+        ├── Color.kt
+        ├── Dimens.kt
+        ├── Shape.kt
+        ├── Theme.kt
+        └── Type.kt
 ```
 
 ## Arquitectura MVVM + Repository
@@ -58,7 +101,7 @@ El texto «Trabajando...» no llega a verse porque el hilo principal es el que d
 
 Si la espera fuera de 10 segundos, Android mostraría el aviso ANR, «La aplicación no responde», y ofrecería cerrarla.
 
-## Capturas
+## Capturas de la Fase 1
 
 | Tarea con progreso | Tarea cancelada |
 |---|---|
@@ -72,7 +115,7 @@ Si la espera fuera de 10 segundos, Android mostraría el aviso ANR, «La aplicac
 |---|---|
 | ![Una por una](capturas/04_una_por_una.png) | ![A la vez](capturas/05_a_la_vez.png) |
 
-## Pruebas de aceptación
+## Pruebas de aceptación de la Fase 1
 
 | Prueba | Resultado |
 |---|---|
@@ -90,6 +133,16 @@ Si la espera fuera de 10 segundos, Android mostraría el aviso ANR, «La aplicac
 | Revisar el código | Sin `GlobalScope`, `runBlocking` ni `Thread.sleep` |
 
 El valor por defecto de primos es 3 000 000 porque en el emulador tarda entre 2 y 3 segundos. Con 500 000 tardaba menos de 1 segundo.
+
+## Pruebas de la Fase 2
+
+| Prueba | Resultado |
+|---|---|
+| Tarea con `Flow` | Llega a 100 %, se cancela, se reinicia y continúa al rotar o cambiar de sección |
+| Primos con porcentaje | 168 hasta 1000 y 602 489 hasta 9 000 000, con el avance visible |
+| Tiempo máximo encendido | «Tardó demasiado» en ambos modos |
+| Tiempo máximo apagado | Una por una 5040 ms y A la vez 3004 ms |
+| Error simulado y Reintentar | Muestra «No se pudo cargar: Sin conexión» y luego el resultado |
 
 ## Para pensar
 
