@@ -20,6 +20,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -149,9 +150,11 @@ private fun TarjetaPrimos(vm: TareasViewModel) {
 @Composable
 private fun TarjetaCargas(vm: TareasViewModel) {
     val carga by vm.carga.collectAsState()
+    val simularError by vm.simularError.collectAsState()
     val cargando = carga is CargaUi.Cargando
 
     TarjetaTarea("Dos cargas") {
+        FilaInterruptor("Simular error", simularError, !cargando, vm::cambiarSimularError)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(onClick = vm::cargarUnaPorUna, enabled = !cargando) {
                 Text("Una por una")
@@ -169,8 +172,42 @@ private fun TarjetaCargas(vm: TareasViewModel) {
                 detalle = "Perfil: ${estado.perfil}\nPedidos: ${estado.pedidos}\n" +
                     "Tiempo: ${estado.milisegundos} ms"
             )
-            is CargaUi.Error -> Unit // TODO Paso 7: mensaje de error y botón Reintentar
+            is CargaUi.Error -> {
+                RecuadroError(estado.mensaje)
+                OutlinedButton(onClick = vm::cargarALaVez) {
+                    Text("Reintentar")
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun FilaInterruptor(
+    texto: String,
+    activado: Boolean,
+    habilitado: Boolean,
+    alCambiar: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Switch(checked = activado, onCheckedChange = alCambiar, enabled = habilitado)
+        Text(texto)
+    }
+}
+
+@Composable
+private fun RecuadroError(mensaje: String) {
+    Surface(
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(mensaje, textAlign = TextAlign.Center, modifier = Modifier.padding(12.dp))
     }
 }
 
