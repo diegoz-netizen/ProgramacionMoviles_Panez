@@ -137,7 +137,13 @@ private fun TarjetaPrimos(vm: TareasViewModel) {
 
         when (val estado = primos) {
             PrimosUi.Inicial -> Unit
-            PrimosUi.Calculando -> CircularProgressIndicator()
+            is PrimosUi.Calculando -> {
+                LinearProgressIndicator(
+                    progress = { estado.porcentaje / 100f },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("Calculando: ${estado.porcentaje} %")
+            }
             is PrimosUi.Listo -> RecuadroExito(
                 titulo = "Primos hasta $hastaContado: ${estado.cantidad}",
                 detalle = "Tiempo: ${estado.milisegundos} ms"
