@@ -10,10 +10,24 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
+    // ----- Contador de toques: prueba de que la pantalla no está congelada
+    private val _toques = MutableStateFlow(0)
+    val toques: StateFlow<Int> = _toques.asStateFlow()
+
+    fun tocar() {
+        _toques.value++
+    }
+
     // ----- Tarea con progreso (pasos 1 a 4)
     private val _mensaje = MutableStateFlow("Listo")
     val mensaje: StateFlow<String> = _mensaje.asStateFlow()
-    // TODO Paso 1: fun tareaLargaMala()
+
+    fun tareaLargaMala() {
+        _mensaje.value = "Trabajando..."
+        Thread.sleep(4000)
+        _mensaje.value = "Terminó"
+    }
+
     // TODO Paso 2: fun tareaLarga()
     // TODO Paso 3: progreso
     // TODO Paso 4: trabajo (Job), corriendo y cancelar()

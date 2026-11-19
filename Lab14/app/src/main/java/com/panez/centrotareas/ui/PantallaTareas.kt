@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +17,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,14 +47,7 @@ fun PantallaTareas(vm: TareasViewModel) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // TODO Paso 1: botón «Tócame: n» que suma un contador
-
-            TarjetaTarea("Tarea con progreso") {
-                // TODO Paso 1: botón Tarea larga (MAL) y texto del mensaje
-                // TODO Paso 2: el botón llama a tareaLarga()
-                // TODO Paso 3: LinearProgressIndicator, porcentaje y botón Iniciar
-                // TODO Paso 4: botón Cancelar
-            }
+            TarjetaProgreso(vm)
 
             TarjetaTarea("Contar números primos") {
                 // TODO Paso 5: campo numérico, botones Contar y Cancelar, y resultado
@@ -65,17 +62,37 @@ fun PantallaTareas(vm: TareasViewModel) {
 }
 
 @Composable
+private fun TarjetaProgreso(vm: TareasViewModel) {
+    val toques by vm.toques.collectAsState()
+    val mensaje by vm.mensaje.collectAsState()
+
+    TarjetaTarea("Tarea con progreso") {
+        Button(onClick = vm::tocar) {
+            Text("Tócame: $toques")
+        }
+        Button(onClick = vm::tareaLargaMala) {
+            Text("Tarea larga (MAL)")
+        }
+        Text(mensaje)
+    }
+}
+
+@Composable
 private fun TarjetaTarea(titulo: String, contenido: @Composable ColumnScope.() -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 titulo,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.fillMaxWidth()
             )
             contenido()
         }
