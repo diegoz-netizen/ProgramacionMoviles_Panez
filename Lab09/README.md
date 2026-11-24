@@ -1,6 +1,6 @@
 # MuroCampus — Laboratorio 9 (Programación en Móviles)
 
-**Alumno:** Diego Panez Rondinel · **Paquete:** `com.tecsup.murocampus` · **Rama:** `sin-ia` (Fase 1)
+**Alumno:** Diego Panez Rondinel · **Paquete:** `com.tecsup.murocampus` · **Ramas:** `sin-ia` (Fase 1) y `con-ia` (Fase 2)
 
 App Android en Kotlin con Jetpack Compose que consume el servicio web REST de [JSONPlaceholder](https://jsonplaceholder.typicode.com/). Lista las publicaciones, muestra el detalle con sus comentarios, filtra por usuario y crea una publicación nueva. Funciona sin cerrarse cuando no hay internet: muestra el error y deja reintentar.
 
@@ -12,6 +12,20 @@ App Android en Kotlin con Jetpack Compose que consume el servicio web REST de [J
 | Detalle | `GET posts/{id}` y `GET posts/{id}/comments` | Las dos llamadas van a la vez con `async`; si una falla, el detalle muestra el error |
 | Filtro | `GET posts?userId=N` | Chips Todos y Usuario 1 a 10 |
 | Crear | `POST posts` con el JSON en el cuerpo | Responde «Publicado con id 101» |
+
+## Fase 2 — Mejoras con IA (rama `con-ia`)
+
+| Mejora | Capas que cambian | Cómo funciona |
+|---|---|---|
+| Borrar publicación | API, Repository, ViewModel y View | `@DELETE("posts/{id}")` devuelve `Response<Unit>`. El Repository revisa `isSuccessful` y, si falla, lo convierte en `HttpException`. Hay un diálogo de confirmación y, si sale bien, la publicación se quita de la lista |
+| Búsqueda por título | ViewModel y View | `combine(lista, busqueda)` filtra en memoria las publicaciones ya descargadas, sin otra llamada |
+| Encabezado con interceptor | RetrofitClient | Un `Interceptor` de OkHttp agrega `Accept: application/json` a todas las peticiones |
+
+El detalle de cada prompt, lo que se cambió y por qué está en [PROMPTS.md](PROMPTS.md).
+
+| Búsqueda | Eliminar |
+|---|---|
+| ![Búsqueda](capturas/06_buscar.png) | ![Eliminar](capturas/07_eliminar.png) |
 
 ## Estructura de paquetes
 
