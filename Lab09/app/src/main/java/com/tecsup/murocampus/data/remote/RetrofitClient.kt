@@ -1,6 +1,7 @@
 package com.tecsup.murocampus.data.remote
 
 import kotlinx.serialization.json.Json
+import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -15,8 +16,18 @@ object RetrofitClient {
     // ignoreUnknownKeys: si el servidor agrega un campo nuevo, la app no falla
     private val json = Json { ignoreUnknownKeys = true }
 
-    // Registra en Logcat cada petición y respuesta (solo para desarrollo)
+    // Agrega el encabezado Accept a todas las peticiones: le dice al servidor que esperamos JSON
+    private val encabezadoJson = Interceptor { cadena ->
+        val peticion = cadena.request().newBuilder()
+            .header("Accept", "application/json")
+            .build()
+        cadena.proceed(peticion)
+    }
+
+    // Registra en Logcat cada petición y respuesta (solo para desarrollo).
+    // Va después del encabezado para que el log muestre la petición ya con Accept.
     private val cliente = OkHttpClient.Builder()
+        .addInterceptor(encabezadoJson)
         .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         .build()
 
