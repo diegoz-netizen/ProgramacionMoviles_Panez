@@ -41,7 +41,10 @@ class MainActivity : ComponentActivity() {
                 // null: se ve la lista; un número: se ve el detalle de esa publicación
                 var idSeleccionado by rememberSaveable { mutableStateOf<Int?>(null) }
                 var creando by rememberSaveable { mutableStateOf(false) }
-                BackHandler(enabled = idSeleccionado != null) { idSeleccionado = null }
+                BackHandler(enabled = idSeleccionado != null) {
+                    idSeleccionado = null
+                    vm.limpiarBorrado()
+                }
                 BackHandler(enabled = creando) {
                     creando = false
                     vm.limpiarEnvio()
@@ -62,7 +65,14 @@ class MainActivity : ComponentActivity() {
                     val id = idSeleccionado
                     when {
                         creando -> PantallaCrear(vm, modificador)
-                        id != null -> PantallaDetalle(vm, id, modificador)
+                        id != null -> PantallaDetalle(
+                            vm, id,
+                            onBorrado = {
+                                idSeleccionado = null
+                                vm.limpiarBorrado()
+                            },
+                            modifier = modificador
+                        )
                         else -> PantallaLista(
                             vm,
                             onAbrir = { nuevo ->

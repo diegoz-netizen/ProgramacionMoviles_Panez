@@ -5,6 +5,7 @@ import com.tecsup.murocampus.model.Comentario
 import com.tecsup.murocampus.model.NuevoPost
 import com.tecsup.murocampus.model.Post
 import kotlinx.coroutines.CancellationException
+import retrofit2.HttpException
 
 /** Lo que el ViewModel puede pedir. Nunca lanza excepciones: todo vuelve como Result. */
 interface PostRepository {
@@ -13,6 +14,7 @@ interface PostRepository {
     suspend fun comentarios(id: Int): Result<List<Comentario>>
     suspend fun porUsuario(userId: Int): Result<List<Post>>
     suspend fun crear(nuevo: NuevoPost): Result<Post>
+    suspend fun borrar(id: Int): Result<Unit>
 }
 
 /** Implementación que usa el servicio web con Retrofit. */
@@ -27,6 +29,12 @@ class PostRepositoryRemote(private val api: PostApi) : PostRepository {
     override suspend fun porUsuario(userId: Int) = llamar { api.porUsuario(userId) }
 
     override suspend fun crear(nuevo: NuevoPost) = llamar { api.crear(nuevo) }
+
+    /** Si el servidor no responde 2xx, se convierte en HttpException para que mensajeDe lo muestre. */
+    override suspend fun borrar(id: Int) = llamar {
+        val respuesta = api.borrar(id)
+        if (!respuesta.isSuccessful) throw HttpException(respuesta)
+    }
 
     /** Ejecuta la llamada y convierte cualquier error en Result.failure. */
     private suspend fun <T> llamar(bloque: suspend () -> T): Result<T> =
