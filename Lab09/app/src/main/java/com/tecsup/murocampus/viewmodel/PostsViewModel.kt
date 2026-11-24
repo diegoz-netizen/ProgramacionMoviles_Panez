@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tecsup.murocampus.data.PostRepository
 import com.tecsup.murocampus.model.Comentario
+import com.tecsup.murocampus.model.NuevoPost
 import com.tecsup.murocampus.model.Post
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -61,5 +62,24 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
                 .onSuccess { _detalle.value = UiState.Exito(it) }
                 .onFailure { _detalle.value = UiState.Error(mensajeDe(it)) }
         }
+    }
+
+    // null: todavía no se envió nada
+    private val _envio = MutableStateFlow<UiState<Post>?>(null)
+    val envio: StateFlow<UiState<Post>?> = _envio.asStateFlow()
+
+    /** Envía la publicación nueva con POST. */
+    fun publicar(titulo: String, texto: String) {
+        viewModelScope.launch {
+            _envio.value = UiState.Cargando
+            repo.crear(NuevoPost(userId = 1, title = titulo, body = texto))
+                .onSuccess { _envio.value = UiState.Exito(it) }
+                .onFailure { _envio.value = UiState.Error(mensajeDe(it)) }
+        }
+    }
+
+    /** Al salir del formulario, se olvida el último envío. */
+    fun limpiarEnvio() {
+        _envio.value = null
     }
 }

@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tecsup.murocampus.data.PostRepositoryRemote
 import com.tecsup.murocampus.data.remote.RetrofitClient
+import com.tecsup.murocampus.ui.PantallaCrear
 import com.tecsup.murocampus.ui.PantallaDetalle
 import com.tecsup.murocampus.ui.PantallaLista
 import com.tecsup.murocampus.ui.theme.MuroCampusTheme
@@ -39,7 +40,12 @@ class MainActivity : ComponentActivity() {
                 )
                 // null: se ve la lista; un número: se ve el detalle de esa publicación
                 var idSeleccionado by rememberSaveable { mutableStateOf<Int?>(null) }
+                var creando by rememberSaveable { mutableStateOf(false) }
                 BackHandler(enabled = idSeleccionado != null) { idSeleccionado = null }
+                BackHandler(enabled = creando) {
+                    creando = false
+                    vm.limpiarEnvio()
+                }
 
                 Scaffold(
                     topBar = {
@@ -54,13 +60,18 @@ class MainActivity : ComponentActivity() {
                 ) { padding ->
                     val modificador = Modifier.fillMaxSize().padding(padding)
                     val id = idSeleccionado
-                    if (id == null) {
-                        PantallaLista(vm, onAbrir = { nuevo ->
-                            idSeleccionado = nuevo
-                            vm.abrir(nuevo)
-                        }, modifier = modificador)
-                    } else {
-                        PantallaDetalle(vm, id, modificador)
+                    when {
+                        creando -> PantallaCrear(vm, modificador)
+                        id != null -> PantallaDetalle(vm, id, modificador)
+                        else -> PantallaLista(
+                            vm,
+                            onAbrir = { nuevo ->
+                                idSeleccionado = nuevo
+                                vm.abrir(nuevo)
+                            },
+                            onCrear = { creando = true },
+                            modifier = modificador
+                        )
                     }
                 }
             }
