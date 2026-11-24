@@ -14,7 +14,7 @@ import com.tecsup.murocampus.viewmodel.UiState
 
 /** Lista de publicaciones: dibuja el estado del ViewModel con un when. */
 @Composable
-fun PantallaLista(vm: PostsViewModel, modifier: Modifier = Modifier) {
+fun PantallaLista(vm: PostsViewModel, onAbrir: (Int) -> Unit, modifier: Modifier = Modifier) {
     val estado by vm.lista.collectAsStateWithLifecycle()
 
     when (val e = estado) {
@@ -26,7 +26,7 @@ fun PantallaLista(vm: PostsViewModel, modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(e.datos, key = { it.id }) { post ->
-                TarjetaPost(post.userId, post.title, post.body, maxLines = 2)
+                TarjetaPost(post.userId, post.title, post.body, maxLines = 2, onClick = { onAbrir(post.id) })
             }
         }
     }
