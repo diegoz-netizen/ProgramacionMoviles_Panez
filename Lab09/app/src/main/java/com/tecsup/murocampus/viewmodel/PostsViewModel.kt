@@ -9,8 +9,11 @@ import com.tecsup.murocampus.model.Post
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /** El detalle: la publicación y sus comentarios. */
@@ -26,7 +29,27 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
     private val _usuarioFiltro = MutableStateFlow<Int?>(null)
     val usuarioFiltro: StateFlow<Int?> = _usuarioFiltro.asStateFlow()
 
+    // Texto del campo de búsqueda
+    private val _busqueda = MutableStateFlow("")
+    val busqueda: StateFlow<String> = _busqueda.asStateFlow()
+
+    /** La lista ya descargada, filtrada por título en memoria: buscar no hace otra llamada. */
+    val listaVisible: StateFlow<UiState<List<Post>>> =
+        combine(_lista, _busqueda) { estado, texto ->
+            val buscado = texto.trim()
+            if (estado is UiState.Exito && buscado.isNotEmpty()) {
+                UiState.Exito(estado.datos.filter { it.title.contains(buscado, ignoreCase = true) })
+            } else {
+                estado
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UiState.Cargando)
+
     init { cargar() }
+
+    /** Guarda lo que se escribe en el buscador. */
+    fun buscar(texto: String) {
+        _busqueda.value = texto
+    }
 
     /** Carga la lista respetando el filtro actual (también lo usa Reintentar). */
     fun cargar() {
