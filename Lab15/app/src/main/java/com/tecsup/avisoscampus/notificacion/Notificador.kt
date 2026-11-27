@@ -59,6 +59,7 @@ object Notificador {
 
         val notificacion = NotificationCompat.Builder(context, canal)
             .setSmallIcon(R.drawable.ic_notificacion)
+            .setColor(ContextCompat.getColor(context, R.color.indigo_avisos)) // acento índigo
             .setContentTitle(aviso.titulo)
             .setContentText(aviso.texto)
             .apply {
