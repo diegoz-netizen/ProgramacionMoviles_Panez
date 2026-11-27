@@ -54,6 +54,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
     val permiso by vm.permiso.collectAsState()
     val faltan by vm.faltan.collectAsState()
     val escuchando by vm.escuchandoAvion.collectAsState()
+    val avisos by vm.avisos.collectAsState()
 
     // El receptor vive solo mientras el switch está activo; al apagarlo o salir se quita
     DisposableEffect(escuchando) {
@@ -144,8 +145,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                     Switch(checked = escuchando, onCheckedChange = { vm.cambiarEscucha(it) })
                 }
             }
-            // TODO Paso 7: reemplazar esta tarjeta por HistorialAvisos(avisos)
-            Tarjeta("Historial") { }
+            HistorialAvisos(avisos)
         }
     }
 }
