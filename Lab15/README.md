@@ -89,6 +89,57 @@ Probadas en el emulador Pixel 8 (API 37).
 | Rotar la pantalla durante el recordatorio | La cuenta regresiva continúa | ✔ |
 | Revisar el código | No hay `Context` en `viewmodel/` y el receptor se quita en `onDispose` | ✔ |
 
+## Fase 2 — Mejoras con IA (rama `con-ia`)
+
+El registro de prompts está en [PROMPTS.md](PROMPTS.md) y el diseño de la base de datos en [docs/BaseDeDatos.md](docs/BaseDeDatos.md).
+
+| Mejora | Capas que cambian | Cómo funciona |
+|---|---|---|
+| Dos canales | Notificador + ViewModel | Canal «Urgentes» con `IMPORTANCE_HIGH` (emergente) además de «Avisos». El ViewModel marca el recordatorio como `urgente` y el `Notificador` elige el canal |
+| Texto largo | Notificador | `BigTextStyle` muestra el texto completo al expandir la notificación |
+| Historial persistente | Repository + ViewModel | Room guarda los avisos en SQLite. El Repository expone un `Flow` y el ViewModel lo convierte con `stateIn`. El id usa `AUTOINCREMENT` y nunca se repite. Botón «Borrar historial» |
+| Rediseño | ui/theme + ui/components | Identidad «Campus índigo» (ver abajo) |
+
+Paquetes nuevos en la Fase 2:
+
+```
+com.tecsup.avisoscampus/
+├── data/
+│   ├── AvisosRepositoryRoom.kt    historial en SQLite
+│   └── local/
+│       ├── AppDatabase.kt
+│       ├── dao/AvisoDao.kt
+│       └── entity/AvisoEntity.kt
+├── di/
+│   └── AppContainer.kt            se crea en AvisosApp
+└── ui/
+    ├── components/                Cabecera y Componentes compartidos
+    └── theme/                     Color, Type, Shape, Dimens y Theme
+```
+
+### Sistema de diseño: «Campus índigo»
+
+| Decisión | Elección |
+|---|---|
+| Personalidad | Ordenada y confiable, como el tablero de avisos de un campus |
+| Color semilla | Índigo `#3949AB` con acento ámbar `#FFB300` para lo urgente y la cuenta regresiva |
+| Formas | Amables: tarjetas de 24 dp, etiquetas tipo píldora, cabecera con esquinas inferiores de 32 dp |
+| Tipografía | Escala propia de Material 3: títulos en negrita y texto de 14 a 16 sp |
+| Imágenes | Íconos vectoriales por sección (candado, sobre, reloj, avión, historial) y campana índigo como ícono de la app y de la notificación |
+| Pantalla | Cabecera con degradado, contador de avisos y estado; tarjetas con ícono; anillo de cuenta regresiva; historial como línea de tiempo |
+
+Las pantallas solo usan `MaterialTheme.colorScheme`, `typography`, `shapes` y `Dimens`; la auditoría de diseño no encontró valores escritos a mano.
+
+### Capturas de la Fase 2
+
+| Diseño nuevo | Texto largo | Canal Urgentes |
+|---|---|---|
+| ![Diseño](capturas/06_diseno.png) | ![Texto largo](capturas/07_texto_largo.png) | ![Urgente](capturas/08_urgente.png) |
+
+| Historial guardado tras cerrar la app | Permiso denegado |
+|---|---|
+| ![Historial persistente](capturas/09_historial_persistente.png) | ![Permiso denegado](capturas/10_permiso_denegado.png) |
+
 ## Para pensar
 
 **1. ¿Por qué una notificación necesita un canal y un permiso? ¿Qué pasa si falta cada uno?**
