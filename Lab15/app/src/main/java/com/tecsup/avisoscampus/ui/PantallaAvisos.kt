@@ -1,6 +1,8 @@
 package com.tecsup.avisoscampus.ui
 
 import android.Manifest
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -9,6 +11,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
+import androidx.compose.runtime.DisposableEffect
+import androidx.core.content.ContextCompat
+import com.tecsup.avisoscampus.receiver.ModoAvionReceiver
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
@@ -47,6 +53,23 @@ fun PantallaAvisos(vm: AvisosViewModel) {
     val contexto = LocalContext.current
     val permiso by vm.permiso.collectAsState()
     val faltan by vm.faltan.collectAsState()
+    val escuchando by vm.escuchandoAvion.collectAsState()
+
+    // El receptor vive solo mientras el switch está activo; al apagarlo o salir se quita
+    DisposableEffect(escuchando) {
+        if (escuchando) {
+            val receptor = ModoAvionReceiver { activo -> vm.alCambiarModoAvion(activo) }
+            ContextCompat.registerReceiver(
+                contexto,
+                receptor,
+                IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED),
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+            onDispose { contexto.unregisterReceiver(receptor) }
+        } else {
+            onDispose { }
+        }
+    }
 
     // Abre el cuadro de permiso que dibuja Android y recibe la respuesta
     val lanzador = rememberLauncherForActivityResult(
@@ -116,7 +139,10 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                 faltan?.let { Text("Faltan $it s", style = MaterialTheme.typography.bodyLarge) }
             }
             Tarjeta("Receptor de anuncios") {
-                // TODO Paso 6: Switch Escuchar el modo avión
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Escuchar el modo avión", modifier = Modifier.weight(1f))
+                    Switch(checked = escuchando, onCheckedChange = { vm.cambiarEscucha(it) })
+                }
             }
             // TODO Paso 7: reemplazar esta tarjeta por HistorialAvisos(avisos)
             Tarjeta("Historial") { }
