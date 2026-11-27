@@ -6,7 +6,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
@@ -43,6 +46,7 @@ import com.tecsup.avisoscampus.viewmodel.AvisosViewModel
 fun PantallaAvisos(vm: AvisosViewModel) {
     val contexto = LocalContext.current
     val permiso by vm.permiso.collectAsState()
+    val faltan by vm.faltan.collectAsState()
 
     // Abre el cuadro de permiso que dibuja Android y recibe la respuesta
     val lanzador = rememberLauncherForActivityResult(
@@ -97,7 +101,19 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                 Button(onClick = { vm.avisarAhora() }) { Text("Mostrar aviso") }
             }
             Tarjeta("Recordatorio") {
-                // TODO Paso 5: Recordar en 10 s, Cancelar y Faltan N s
+                val corriendo = faltan != null
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(onClick = { vm.recordarEn(10) }, enabled = !corriendo) {
+                        Text("Recordar en 10 s")
+                    }
+                    OutlinedButton(onClick = { vm.cancelarRecordatorio() }, enabled = corriendo) {
+                        Text("Cancelar")
+                    }
+                }
+                faltan?.let { Text("Faltan $it s", style = MaterialTheme.typography.bodyLarge) }
             }
             Tarjeta("Receptor de anuncios") {
                 // TODO Paso 6: Switch Escuchar el modo avión
