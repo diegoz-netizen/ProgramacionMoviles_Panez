@@ -162,7 +162,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                     Switch(checked = escuchando, onCheckedChange = { vm.cambiarEscucha(it) })
                 }
             }
-            HistorialAvisos(avisos)
+            HistorialAvisos(avisos, onLimpiar = { vm.limpiarHistorial() })
         }
     }
 }

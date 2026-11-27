@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,7 +23,7 @@ import com.tecsup.avisoscampus.model.Aviso
  * la pantalla ya se desplaza y una LazyColumn dentro daría error.
  */
 @Composable
-fun HistorialAvisos(avisos: List<Aviso>) {
+fun HistorialAvisos(avisos: List<Aviso>, onLimpiar: () -> Unit) {
     Tarjeta("Historial") {
         if (avisos.isEmpty()) {
             Text("Sin avisos todavía", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -31,6 +32,7 @@ fun HistorialAvisos(avisos: List<Aviso>) {
                 if (i > 0) HorizontalDivider()
                 FilaAviso(aviso)
             }
+            TextButton(onClick = onLimpiar) { Text("Borrar historial") }
         }
     }
 }

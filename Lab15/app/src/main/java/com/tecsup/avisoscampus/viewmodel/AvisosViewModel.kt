@@ -10,15 +10,19 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
 
+    // Room entrega un Flow; stateIn lo convierte en el StateFlow que observa la pantalla
     val avisos: StateFlow<List<Aviso>> = repo.avisos
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     // Evento de una sola vez: "muestra esta notificación".
     // El ViewModel NO tiene Context: lo recibe la pantalla.
@@ -97,6 +101,11 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
             val aviso = repo.registrar("Modo avión", estado, Origen.MODO_AVION)
             _eventos.emit(aviso)
         }
+    }
+
+    /** Borra el historial guardado. */
+    fun limpiarHistorial() {
+        viewModelScope.launch { repo.limpiar() }
     }
 
     /** La pantalla no pudo mostrar la notificación (no hay permiso). */
