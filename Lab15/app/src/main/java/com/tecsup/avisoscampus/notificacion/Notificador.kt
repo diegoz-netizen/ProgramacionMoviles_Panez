@@ -61,6 +61,10 @@ object Notificador {
             .setSmallIcon(R.drawable.ic_notificacion)
             .setContentTitle(aviso.titulo)
             .setContentText(aviso.texto)
+            .apply {
+                // Al expandir la notificación se ve el texto completo
+                aviso.detalle?.let { setStyle(NotificationCompat.BigTextStyle().bigText(it)) }
+            }
             .setPriority(prioridad) // para Android 7 o menos, que no tiene canales
             .setContentIntent(pendiente)
             .setAutoCancel(true) // se quita al tocarla

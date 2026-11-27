@@ -12,7 +12,13 @@ import java.util.Locale
 /** Lo que el ViewModel puede pedir sobre el historial. */
 interface AvisosRepository {
     val avisos: StateFlow<List<Aviso>>
-    fun registrar(titulo: String, texto: String, origen: Origen, urgente: Boolean = false): Aviso
+    fun registrar(
+        titulo: String,
+        texto: String,
+        origen: Origen,
+        urgente: Boolean = false,
+        detalle: String? = null
+    ): Aviso
 }
 
 /** Guarda el historial en memoria mientras la app está abierta. */
@@ -23,9 +29,15 @@ class AvisosRepositoryMemoria : AvisosRepository {
 
     private var siguiente = 1
 
-    override fun registrar(titulo: String, texto: String, origen: Origen, urgente: Boolean): Aviso {
+    override fun registrar(
+        titulo: String,
+        texto: String,
+        origen: Origen,
+        urgente: Boolean,
+        detalle: String?
+    ): Aviso {
         val hora = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-        val aviso = Aviso(siguiente++, titulo, texto, origen, hora, urgente)
+        val aviso = Aviso(siguiente++, titulo, texto, origen, hora, urgente, detalle)
         _avisos.value = listOf(aviso) + _avisos.value // lo más reciente arriba
         return aviso
     }

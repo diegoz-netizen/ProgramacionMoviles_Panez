@@ -14,7 +14,8 @@ data class Aviso(
     val texto: String,
     val origen: Origen,
     val hora: String,
-    val urgente: Boolean = false // va por el canal Urgentes
+    val urgente: Boolean = false, // va por el canal Urgentes
+    val detalle: String? = null   // texto largo que se ve al expandir la notificación
 )
 
 /** Estado del permiso de notificaciones. */
