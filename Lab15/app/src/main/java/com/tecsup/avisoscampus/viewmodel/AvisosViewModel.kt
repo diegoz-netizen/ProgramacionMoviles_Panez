@@ -34,6 +34,7 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
     /** La pantalla avisa qué respondió la persona (o que ya estaba concedido). */
     fun permisoRespondido(concedido: Boolean) {
         _permiso.value = if (concedido) PermisoUi.Concedido else PermisoUi.Denegado
+        if (concedido) _mensaje.value = null // ya se puede mostrar: el mensaje se quita solo
     }
 
     /** Anota el aviso en el historial y le pide a la pantalla que lo muestre. */
@@ -88,5 +89,8 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
         }
     }
 
-    // TODO Paso 8: fun noSePudoMostrar()
+    /** La pantalla no pudo mostrar la notificación (no hay permiso). */
+    fun noSePudoMostrar() {
+        _mensaje.value = "Sin permiso: el aviso se guardó en el historial, pero no se mostró"
+    }
 }
